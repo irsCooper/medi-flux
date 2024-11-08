@@ -11,8 +11,8 @@ BASE_DIR = Path(__file__).parent.parent.parent
 load_dotenv()
 
 class AuthJWT(BaseModel):
-    private_key_path: Path = BASE_DIR / "cert" / "jwt-private.pem"
-    public_key_path: Path = BASE_DIR / "cert" / "jwt-publick.pem"
+    private_key_path: Path = BASE_DIR / "certificates" / "jwt-private.pem"
+    public_key_path: Path = BASE_DIR / "certificates" / "jwt-publick.pem"
     algorithms: str = "RS256"
     access_token_expire_minutes: int = 15
     refresh_token_expire_days: int = 30 * 60 * 24
