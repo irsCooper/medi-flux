@@ -9,4 +9,4 @@ __all__ = (
 
 from src.base_model import BaseModel
 from src.accounts.model import RoleModel, UserModel, UserRolesModel
-from src.core.db_helper import DatabaseHelper, db
+from .db_helper import DatabaseHelper, db

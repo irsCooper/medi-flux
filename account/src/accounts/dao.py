@@ -7,8 +7,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 from src.exceptions.DatabaseException import ConflictUnicueAttribute, UnknowanDatabaseException, DatabaseException
-from src.accounts.schemas import UserCreateDB, UserUpdateDB
-from src.accounts.model import ROLE_USER, RoleModel, UserModel
+from src.accounts.schemas import ROLE_ADMIN, UserCreateDB, UserUpdateDB, ROLE_USER
+from src.accounts.model import RoleModel, UserModel
 from src.base_dao import BaseDAO
 
 
@@ -27,6 +27,7 @@ class UserDAO(BaseDAO[UserModel, UserCreateDB, UserUpdateDB]):
             create_data = obj_in.model_dump(exclude_unset=True)
         
         roles = create_data.pop("roles", None)
+        print(roles)
 
         try:
             stmt = (
@@ -44,12 +45,14 @@ class UserDAO(BaseDAO[UserModel, UserCreateDB, UserUpdateDB]):
             if user:
                 if not roles:
                     roles = [ROLE_USER]
+
                 new_roles_check = await session.execute(
                     select(RoleModel)
                     .where(RoleModel.name_role.in_(roles))
                 )
-                roles = new_roles_check.scalars().all()
-                user.roles.extend(roles)
+                new_roles = new_roles_check.scalars().all()
+                user.roles.extend(new_roles)
+                await session.commit()
                 return user
         except IntegrityError:
             raise ConflictUnicueAttribute('Username is already exists')

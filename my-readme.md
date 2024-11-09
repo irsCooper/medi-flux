@@ -24,10 +24,9 @@ docker inspect doc_postgres | grep IPAddress
 
 
 
-alembic init alembic
+alembic init -t async alembic
 
 хост к бд получать в скрипте
 
 postgresql://%(DB_USER)s:%(DB_PASS)s@%(DB_HOST)s:%(DB_PORT)s/%(DB_NAME)s
 
-alembic init -t async alembic

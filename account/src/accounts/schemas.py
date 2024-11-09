@@ -3,8 +3,10 @@ import uuid
 from pydantic import BaseModel, ConfigDict
 
 
-class RoleSchema(BaseModel):
-    name_role: str
+ROLE_USER = "User"
+ROLE_ADMIN = "Admin"
+ROLE_MANAGER = "Manager"
+ROLE_DOCTOR = "Doctor"
 
 
 class UserBase(BaseModel):
@@ -14,14 +16,14 @@ class UserBase(BaseModel):
 
 
 class UserView(UserBase):
-    roles: List[RoleSchema]
+    roles: List[str]
 
 # запись
 class UserDB(UserBase):
     id: uuid.UUID
     hashed_password: bytes
     active: bool
-    roles: List[RoleSchema]
+    roles: List[str]
     model_config = ConfigDict(from_attributes=True)
 
 # запрос
@@ -31,7 +33,7 @@ class UserCreate(UserBase):
 # запрос
 class UserCreateDB(UserBase):
     hashed_password: bytes
-    roles: List[RoleSchema]
+    roles: List[str]
 
 # запрос
 class UserUpdate(BaseModel):
@@ -43,11 +45,11 @@ class UserUpdate(BaseModel):
 class UserUpdateDB(UserBase):
     user_name: Optional[str] = None
     hashed_password: bytes
-    roles: Optional[List[RoleSchema]] = None
+    roles: Optional[List[str]] = None
 
 # запрос
 class UserCreateAdmin(UserCreate):
-    roles: List[RoleSchema]
+    roles: List[str]
 
 # запрос
 class UserUpdateAdmin(UserCreateAdmin):

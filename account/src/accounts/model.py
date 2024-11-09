@@ -2,16 +2,10 @@ import uuid
 from sqlalchemy import UUID, ForeignKey, Integer, String, Boolean
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
-from src.base_model import Base
-
-ROLE_USER = "User"
-ROLE_ADMIN = "Admin"
-ROLE_MANAGER = "Manager"
-ROLE_DOCTOR = "Doctor"
+from ..base_model import BaseModel
 
 
-
-class UserRolesModel(Base):
+class UserRolesModel(BaseModel):
     __tablename__ = 'user_roles'
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), primary_key=True)
@@ -19,7 +13,7 @@ class UserRolesModel(Base):
 
 
 
-class RoleModel(Base):
+class RoleModel(BaseModel):
     __tablename__ = 'roles'
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
@@ -32,7 +26,7 @@ class RoleModel(Base):
 
 
 
-class UserModel(Base):
+class UserModel(BaseModel):
     __tablename__ = 'users'
     
     id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
