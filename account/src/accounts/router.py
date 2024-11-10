@@ -1,11 +1,11 @@
 import uuid
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.accounts.service import UserService
 from src.accounts.dao import UserDAO
-from src.accounts.schemas import UserView
+from src.accounts.schemas import UserCreateAdmin, UserView
 from src.core.db_helper import db
 
 
@@ -24,7 +24,7 @@ async def get_user_info(
     
 
 
-@router.get("", response_model=list[UserView])
+@router.get("/", response_model=list[UserView])
 async def get_list_users(
     offset: int,
     count: int,
@@ -35,3 +35,18 @@ async def get_list_users(
         offset=offset, 
         limit=count, 
     )
+
+
+@router.post("/", status_code=status.HTTP_201_CREATED)
+async def create_user_only_admin(
+    user: UserCreateAdmin,
+    session: AsyncSession = Depends(db.session_dependency)
+):
+    await UserService.create_user(
+        user_in=user,
+        session=session,
+    )
+    return {
+        "status_code": status.HTTP_201_CREATED,
+        "detail": "User created",
+    }
