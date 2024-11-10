@@ -18,6 +18,7 @@ class RoleModel(BaseModel):
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True, nullable=False)
     name_role: Mapped[str] = mapped_column(String(30), nullable=False, unique=True)
+    
     users: Mapped[list["UserModel"]] = relationship(
         "UserModel",
         secondary="user_roles",

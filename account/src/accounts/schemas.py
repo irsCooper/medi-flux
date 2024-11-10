@@ -8,6 +8,8 @@ ROLE_ADMIN = "Admin"
 ROLE_MANAGER = "Manager"
 ROLE_DOCTOR = "Doctor"
 
+class RoleSchema(BaseModel):
+    name_role: str
 
 class UserBase(BaseModel):
     last_name: str 
@@ -16,7 +18,7 @@ class UserBase(BaseModel):
 
 
 class UserView(UserBase):
-    roles: List[str]
+    roles: List[RoleSchema]
 
 # запись
 class UserDB(UserBase):

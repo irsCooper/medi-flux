@@ -1,5 +1,8 @@
 
-from typing import Optional 
+from typing import Optional
+import uuid
+
+from fastapi import HTTPException, status 
 
 from src.accounts.schemas import ROLE_ADMIN, ROLE_USER
 from src.accounts.model import  UserModel
@@ -34,3 +37,21 @@ class UserService:
                 roles=roles
             )
         )
+    
+
+    @classmethod
+    async def get_user(
+        cls, 
+        user_id: uuid.UUID, 
+        session: AsyncSession
+    ) -> UserModel:
+        user = await UserDAO.find_one_or_none(
+            session,
+            UserModel.id == user_id,
+        )
+        if not user or not user.active:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        return user
