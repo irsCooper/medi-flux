@@ -79,3 +79,26 @@ class UserDAO(BaseDAO[UserModel, UserCreateDB, UserUpdateDB]):
         )
         result = await session.execute(stmt)
         return result.scalars().one_or_none()
+    
+    @classmethod
+    async def find_all(
+        cls,
+        session: AsyncSession,
+        *filters,
+        offset: int = 0,
+        limit: int = 100,
+        **filter_by
+    ):
+        stmt = (
+            select(cls.model)
+            .options(
+                selectinload(cls.model.roles)
+            )
+            .join(cls.model.roles)
+            .filter(*filters)
+            .filter_by(**filter_by)
+            .offset(offset)
+            .limit(limit)
+        ) 
+        result = await session.execute(stmt)
+        return result.scalars().all()

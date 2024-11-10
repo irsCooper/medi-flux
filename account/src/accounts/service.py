@@ -55,3 +55,18 @@ class UserService:
                 detail="User not found"
             )
         return user
+    
+
+    @classmethod
+    async def get_list_users(
+        cls, 
+        offset: int, 
+        limit: int, 
+        session: AsyncSession
+    ):
+        return await UserDAO.find_all(
+            session,
+            UserModel.active == True,
+            offset=offset,
+            limit=limit
+        )

@@ -23,3 +23,15 @@ async def get_user_info(
     return await UserService.get_user(user_id=id, session=session)
     
 
+
+@router.get("", response_model=list[UserView])
+async def get_list_users(
+    offset: int,
+    count: int,
+    session: AsyncSession = Depends(db.session_dependency)
+):
+    return await UserService.get_list_users(
+        session=session,
+        offset=offset, 
+        limit=count, 
+    )
