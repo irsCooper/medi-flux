@@ -2,9 +2,10 @@
 from typing import Optional
 import uuid
 
-from fastapi import HTTPException, status 
+from fastapi import HTTPException, status
+from sqlalchemy import and_ 
 
-from src.accounts.schemas import ROLE_ADMIN, ROLE_USER
+from src.accounts.schemas import ROLE_ADMIN, ROLE_USER, UserUpdate, UserUpdateAdmin, UserUpdateDB
 from src.accounts.model import  UserModel
 from src.authentication.utils import hash_password
 from src.accounts.dao import UserDAO
@@ -70,3 +71,28 @@ class UserService:
             offset=offset,
             limit=limit
         )
+    
+
+    @classmethod
+    async def update_user(
+        cls,
+        user_id: uuid.UUID,
+        user: UserUpdate | UserUpdateAdmin,
+        session: AsyncSession
+    ):
+        user_update = await UserDAO.update(
+            session,
+            and_(UserModel.id == user_id, UserModel.active == True),
+            obj_in=UserUpdateDB(
+                **user.model_dump(exclude={"password", "user_name"}),
+                hashed_password=await hash_password(user.password)
+            )
+        )
+
+        if not user_update:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        
+        return user_update

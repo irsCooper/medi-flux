@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.accounts.service import UserService
 from src.accounts.dao import UserDAO
-from src.accounts.schemas import UserCreateAdmin, UserView
+from src.accounts.schemas import UserCreateAdmin, UserDB, UserUpdate, UserView
 from src.core.db_helper import db
 
 
@@ -22,6 +22,14 @@ async def get_user_info(
 ):
     return await UserService.get_user(user_id=id, session=session)
     
+
+@router.put("/Update")
+async def update_user_info(
+    user_id: uuid.UUID,
+    user: UserUpdate,
+    session: AsyncSession = Depends(db.session_dependency)
+):
+    return await UserService.update_user(user_id=user_id, user=user, session=session)
 
 
 @router.get("/", response_model=list[UserView])
