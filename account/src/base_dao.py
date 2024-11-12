@@ -1,7 +1,7 @@
 from typing import Any, Dict, Generic, Optional, TypeVar, Union
 from pydantic import BaseModel
 
-from sqlalchemy import insert
+from sqlalchemy import delete, insert
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -53,15 +53,20 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
 
     @classmethod
-    async def delete():
-        pass 
+    async def delete(
+        cls,
+        session: AsyncSession,
+        *filters,
+        **filter_by
+    ) -> None:
+        stmt = (
+            delete(cls.model)
+            .filter(*filters)
+            .filter_by(**filter_by)
+        )
+        await session.execute(stmt)
+        await session.commit()
 
-
-
-
-    @classmethod
-    async def count():
-        pass 
 
 
 

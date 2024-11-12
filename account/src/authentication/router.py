@@ -16,7 +16,7 @@ router = APIRouter(
 
 @router.post("/SignUp", status_code=status.HTTP_201_CREATED)
 async def sign_up(
-    user_create: UserCreateAdmin,
+    user_create: UserCreate,
     session: AsyncSession = Depends(db.session_dependency),
 ):
     await UserService.create_user(user_in=user_create, session=session)

@@ -109,7 +109,8 @@ class UserDAO(BaseDAO[UserModel, UserCreateDB, UserUpdateDB]):
             .limit(limit)
         ) 
         result = await session.execute(stmt)
-        return result.scalars().all()
+        res = result.scalars().all()
+        return res
 
 
     @classmethod

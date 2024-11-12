@@ -4,7 +4,6 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.accounts.service import UserService
-from src.accounts.dao import UserDAO
 from src.accounts.schemas import UserCreateAdmin, UserDB, UserUpdate, UserView
 from src.core.db_helper import db
 
@@ -23,7 +22,7 @@ async def get_user_info(
     return await UserService.get_user(user_id=id, session=session)
     
 
-@router.put("/Update")
+@router.put("/Update", response_model=UserDB)
 async def update_user_info(
     user_id: uuid.UUID,
     user: UserUpdate,
@@ -58,3 +57,24 @@ async def create_user_only_admin(
         "status_code": status.HTTP_201_CREATED,
         "detail": "User created",
     }
+
+
+@router.put("/{id}", response_model=UserDB)
+async def update_user_info_only_admin(
+    id: uuid.UUID,
+    user: UserUpdate,
+    session: AsyncSession = Depends(db.session_dependency)
+):
+    return await UserService.update_user(user_id=id, user=user, session=session)
+
+
+
+@router.delete("/{id}")
+async def delete_user_only_admin(
+    id: uuid.UUID,
+    session: AsyncSession = Depends(db.session_dependency)
+):
+    await UserService.delete_user(user_id=id, session=session)
+
+
+

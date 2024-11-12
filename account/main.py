@@ -8,6 +8,7 @@ from sqlalchemy import select
 from src.core.db_helper import db
 from src.authentication.router import router as router_authentication
 from src.accounts.router import router as router_account
+from src.doctors.router import router as router_doctors
 
 import uvicorn
 
@@ -27,6 +28,7 @@ app = FastAPI(
 
 app.include_router(router_authentication)
 app.include_router(router_account)
+app.include_router(router_doctors)
 
 
 if __name__ == "__main__":

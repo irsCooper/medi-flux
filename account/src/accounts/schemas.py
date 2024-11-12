@@ -18,6 +18,7 @@ class UserBase(BaseModel):
 
 
 class UserView(UserBase):
+    id: uuid.UUID
     roles: List[RoleSchema]
 
 
@@ -25,7 +26,7 @@ class UserDB(UserBase):
     id: uuid.UUID
     hashed_password: bytes
     active: bool
-    roles: List[str]
+    roles: List[RoleSchema]
     model_config = ConfigDict(from_attributes=True)
 
 

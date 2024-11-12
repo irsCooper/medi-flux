@@ -96,3 +96,18 @@ class UserService:
             )
         
         return user_update
+    
+
+    @classmethod
+    async def delete_user(
+        cls,
+        user_id: uuid.UUID,
+        session: AsyncSession
+    ):
+        user = await cls.get_user(user_id, session)
+
+        await UserDAO.update(
+            session,
+            UserModel.id == user.id,
+            obj_in={"active": False}
+        )
