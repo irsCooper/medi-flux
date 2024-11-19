@@ -1,4 +1,5 @@
 from typing import Optional
+import uuid
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, OAuth2PasswordBearer
 
@@ -9,7 +10,7 @@ import jwt
 from src.accounts.dao import UserDAO
 from src.accounts.service import UserService
 from src.accounts.model import UserModel
-from src.authentication.utils import ACCESS_TOKEN_TYPE, TOKEN_TYPE_FIELD, decode_jwt, encode_jwt
+from src.authentication.utils import ACCESS_TOKEN_TYPE, REFRESH_TOKEN_TYPE, TOKEN_TYPE_FIELD, decode_jwt, encode_jwt
 from src.core.config import settings
 from src.core.db_helper import db
 
@@ -25,6 +26,7 @@ async def create_jwt(
 ) -> str:
     jwt_payload = {TOKEN_TYPE_FIELD: token_type}
     jwt_payload.update(token_data)
+
     return await encode_jwt(
         payload=jwt_payload,
         expire_minutes=expire_minutes
@@ -33,23 +35,28 @@ async def create_jwt(
 
 async def create_token_of_type(
     token_type: str, 
-    user: UserModel
+    user: UserModel,
+    refresh_id: uuid.UUID | None
 ) -> str:
     
     jwt_payload = {
-        "sub": user.id
+        "sub": str(user.id),
     }
-
-    expire_minutes: int = settings.auth_jwt.refresh_token_expire_days * 60 * 24
-
 
     if token_type == ACCESS_TOKEN_TYPE:
         jwt_payload.update({
             "user_name": user.user_name,
-            "active": user.active
+            "active": user.active,
         })
+
         expire_minutes = settings.auth_jwt.access_token_expire_minutes 
-    
+        
+    else:
+        jwt_payload.update({
+            "id": refresh_id, 
+        })
+
+        expire_minutes: int = settings.auth_jwt.refresh_token_expire_days * 60 * 24
 
     return await create_jwt(
         token_type=token_type,

@@ -60,7 +60,7 @@ class UserDAO(BaseDAO[UserModel, UserCreateDB, UserUpdateDB]):
                 )
                 new_roles = new_roles_check.scalars().all()
                 user.roles.extend(new_roles)
-                await session.commit()
+                # await session.commit()
                 return user
         except IntegrityError:
             raise ConflictUnicueAttribute('Username is already exists')
