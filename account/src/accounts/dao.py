@@ -64,7 +64,8 @@ class UserDAO(BaseDAO[UserModel, UserCreateDB, UserUpdateDB]):
                 return user
         except IntegrityError:
             raise ConflictUnicueAttribute('Username is already exists')
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
+            print(e)
             raise DatabaseException
         except Exception:
             raise UnknowanDatabaseException

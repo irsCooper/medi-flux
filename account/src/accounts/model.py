@@ -43,3 +43,10 @@ class UserModel(BaseModel):
         secondary="user_roles",
         back_populates="users"
     )
+
+    refresh_session: Mapped[list["RefreshModel"]] = relationship(
+        "RefreshModel",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True 
+    )

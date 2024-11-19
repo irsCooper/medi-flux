@@ -1,7 +1,8 @@
+from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from account.src.accounts.dao import UserDAO
-from account.src.accounts.model import UserModel
+from src.accounts.dao import UserDAO
+from src.accounts.model import UserModel
 from src.accounts.service import UserService
 from src.authentication.schemas import TokenInfo
 from src.authentication.utils import ACCESS_TOKEN_TYPE, REFRESH_TOKEN_TYPE, validate_password
@@ -18,6 +19,19 @@ class AuthService:
             refresh_token=await create_token_of_type(REFRESH_TOKEN_TYPE, user),
         )
 
+    
+    @classmethod
+    async def sign_up(
+        cls, 
+        user_in: UserCreate, 
+        session: AsyncSession
+    ): 
+        user = await UserService.create_user(
+            user_in=user_in, 
+            session=session
+        )
+        return await cls.create_token_info(user)
+
 
     @classmethod
     async def sign_in(
@@ -26,13 +40,17 @@ class AuthService:
         password: str,
         session: AsyncSession,
     ):
-        user = UserDAO.find_one_or_none(
+        user: Optional[UserModel]  = UserDAO.find_one_or_none(
             session,
             username=username
         )
 
-        if user and user.active and await validate_password(user_in.password, user.hashed_password):
+        if user and user.active and await validate_password(password, user.hashed_password):
             return cls.create_token_info(user)
         
         raise InvalidCredentialsException
+    
+
+
+
     
