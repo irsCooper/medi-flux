@@ -19,7 +19,7 @@ docker exec -it doc_postgres psql -U postgres
 
 docker exec -it postgres psql -U postgres -d account_db
 
-
+    
 docker inspect doc_postgres | grep IPAddress
 
 

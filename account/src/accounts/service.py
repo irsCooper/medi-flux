@@ -30,6 +30,8 @@ class UserService:
                 hashed_password=hashed_password,
             )
         )
+            
+        roles = [ROLE_USER]
         return await UserDAO.add(
             session=session,
             obj_in=UserCreateDB(
