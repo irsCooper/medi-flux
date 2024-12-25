@@ -31,6 +31,6 @@ class CredentialsForm(BaseModel):
     password: str = Form()
 
 
-class Credentials(BaseModel):
+class CredentialsJSON(BaseModel):
     username: str 
     password: str 

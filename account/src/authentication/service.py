@@ -60,13 +60,15 @@ class AuthService:
         password: str,
         session: AsyncSession,
     ):
-        user: Optional[UserModel]  = UserDAO.find_one_or_none(
+        user: Optional[UserModel]  = await UserDAO.find_one_or_none(
             session,
-            username=username
+            user_name=username
         )
 
+        print(user)
+
         if user and user.active and await validate_password(password, user.hashed_password):
-            return cls.create_token_info(user, session)
+            return await cls.create_token(user, session)
         
         raise InvalidCredentialsException
     
