@@ -36,7 +36,7 @@ async def create_jwt(
 async def create_token_of_type(
     token_type: str, 
     user: UserModel,
-    refresh_id: uuid.UUID | None
+    refresh_id: Optional[uuid.UUID] = None
 ) -> str:
     
     jwt_payload = {
@@ -53,7 +53,7 @@ async def create_token_of_type(
         
     else:
         jwt_payload.update({
-            "id": refresh_id, 
+            "id": str(refresh_id), 
         })
 
         expire_minutes: int = settings.auth_jwt.refresh_token_expire_days * 60 * 24
@@ -76,18 +76,6 @@ async def validate_token_type(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail=f"invalid token type {current_token_type!r} expected {token_type!r}"
     )
-
-
-# async def get_current_token_payload(token: str):
-#     try:
-#         payload = await decode_jwt(token)
-#     except jwt.InvalidTokenError as e:
-#         print(e)
-#         raise HTTPException(
-#             status_code=status.HTTP_401_UNAUTHORIZED,
-#             detail="invalid token error"
-#         )
-#     return payload  
 
 
 async def get_user_by_token_sub(

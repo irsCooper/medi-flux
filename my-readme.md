@@ -15,18 +15,18 @@ docker run -p 5432:5432 --name doc_postgres -e POSTGRES_USER=postgres -e POSTGRE
 
 docker run --name doc_postgres -e POSTGRES_PASSWORD=mypassword -d postgres
 
-docker exec -it doc_postgres psql -U postgres
+
 
 docker exec -it postgres psql -U postgres -d account_db
 
     
-docker inspect doc_postgres | grep IPAddress
+docker inspect postgres | grep IPAddress
 
 
 
 alembic init -t async alembic
 
-хост к бд получать в скрипте
+
 
 postgresql://%(DB_USER)s:%(DB_PASS)s@%(DB_HOST)s:%(DB_PORT)s/%(DB_NAME)s
 

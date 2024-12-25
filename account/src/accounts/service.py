@@ -21,23 +21,23 @@ class UserService:
         session: AsyncSession
     ) -> Optional[UserModel]:
         hashed_password = await hash_password(user_in.password)
-        roles = []
-        if isinstance(user_in, UserCreateAdmin):
-            return await UserDAO.add(
-            session=session,
-            obj_in=UserCreateDB(
-                **user_in.model_dump(exclude={"password"}),
-                hashed_password=hashed_password,
-            )
-        )
+
+        # if isinstance(user_in, UserCreateAdmin):
+        #     return await UserDAO.add(
+        #     session=session,
+        #     obj_in=UserCreateDB(
+        #         **user_in.model_dump(exclude={"password"}),
+        #         hashed_password=hashed_password,
+        #     )
+        # )
             
-        roles = [ROLE_USER]
+        # roles = [ROLE_USER]
         return await UserDAO.add(
             session=session,
             obj_in=UserCreateDB(
                 **user_in.model_dump(exclude={"password"}),
                 hashed_password=hashed_password,
-                roles=roles
+                # roles=roles
             )
         )
     

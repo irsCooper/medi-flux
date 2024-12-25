@@ -30,12 +30,13 @@ class UserDAO(BaseDAO[UserModel, UserCreateDB, UserUpdateDB]):
         roles = create_data.pop("roles", None)
         
         system_roles = [ROLE_ADMIN, ROLE_USER, ROLE_DOCTOR, ROLE_MANAGER]
-        for role in roles:
-            if role not in system_roles:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail=f"Role {role} not found"
-                )
+        if roles:
+            for role in roles:
+                if role not in system_roles:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail=f"Role {role} not found"
+                    )
 
         try:
             stmt = (
@@ -43,7 +44,8 @@ class UserDAO(BaseDAO[UserModel, UserCreateDB, UserUpdateDB]):
                 .values(**create_data)
                 .returning(cls.model)
                 .options(
-                    selectinload(cls.model.roles)
+                    selectinload(cls.model.roles),
+                    # selectinload(cls.model.refresh_session)
                 )
             )
             result = await session.execute(stmt)

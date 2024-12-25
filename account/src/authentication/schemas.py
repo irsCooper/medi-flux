@@ -5,10 +5,11 @@ from pydantic import BaseModel, Field
 
 
 class RefreshCreate(BaseModel):
-    refresh_token: uuid.UUID
+    user_id: uuid.UUID
+    reftesh_token_id: uuid.UUID
+    reftesh_token: str 
     access_token: str 
     expire_in: int 
-    user_id: uuid.UUID
 
 
 class RefreshUpdate(RefreshCreate):

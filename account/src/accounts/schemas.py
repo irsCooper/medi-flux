@@ -27,6 +27,7 @@ class UserDB(UserBase):
     hashed_password: bytes
     active: bool
     roles: List[RoleSchema]
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -36,7 +37,7 @@ class UserCreate(UserBase):
 
 class UserCreateDB(UserBase):
     hashed_password: bytes
-    roles: List[str]
+    roles: Optional[List[str]] = None
 
 
 class UserUpdate(BaseModel):
@@ -49,9 +50,13 @@ class UserUpdateDB(UserBase):
     user_name: Optional[str] = None
     hashed_password: bytes
     roles: Optional[List[str]] = None
+    refresh_session: Optional[uuid.UUID] = None
+
+    model_config = ConfigDict(from_attributes=True)
 
 
-class UserCreateAdmin(UserCreate):
+class UserCreateAdmin(UserBase):
+    password: str
     roles: List[str]
 
 

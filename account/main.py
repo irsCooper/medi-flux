@@ -16,7 +16,7 @@ import uvicorn
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     yield
-    await db.dispose()
+    # await db.dispose()
 
 
 

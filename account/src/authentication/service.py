@@ -12,25 +12,29 @@ from src.authentication.utils import ACCESS_TOKEN_TYPE, REFRESH_TOKEN_TYPE, vali
 from src.dependencies import create_token_of_type
 from src.exceptions.AuthExceptions import InvalidCredentialsException
 from src.accounts.schemas import UserCreate
+from src.core.config import settings
 
 
 class AuthService:
     @classmethod
-    async def create_token_info(cls, user: UserModel, session: AsyncSession) -> TokenInfo:
-        access_token=await create_token_of_type(ACCESS_TOKEN_TYPE, user),
+    async def create_token(cls, user: UserModel, session: AsyncSession) -> TokenInfo:
+        access_token = await create_token_of_type(ACCESS_TOKEN_TYPE, user)
 
         refresh_id = uuid.uuid4()
-        refresh_token=await create_token_of_type(REFRESH_TOKEN_TYPE, user, refresh_id),
+        refresh_token = await create_token_of_type(REFRESH_TOKEN_TYPE, user, refresh_id)
         
         await RefreshTokenDAO.add(
             session,
             RefreshCreate(
                 user_id=user.id,
-                refresh_token=refresh_id,
+                reftesh_token_id=refresh_id,
+                reftesh_token=refresh_token,
                 access_token=access_token,
-                expire_in=int(datetime.utcnow().timestamp()),
+                expire_in=int(datetime.utcnow().timestamp() + settings.auth_jwt.refresh_token_expire_days * 120 * 24),
             )
         )
+        
+        await session.commit()
 
         return TokenInfo(
             access_token=access_token,
@@ -44,17 +48,9 @@ class AuthService:
         user_in: UserCreate, 
         session: AsyncSession
     ): 
-        user = await UserService.create_user(
-            user_in=user_in, 
-            session=session
-        )
+        user = await UserService.create_user(user_in=user_in, session=session)
+        return await cls.create_token(user, session)
 
-        try:
-            token = await cls.create_token_info(user, session)
-            await session.commit()
-            return token
-        except Exception as e:
-            print(e)
 
 
     @classmethod
