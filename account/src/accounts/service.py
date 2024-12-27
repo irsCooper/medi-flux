@@ -65,8 +65,16 @@ class UserService:
         cls, 
         offset: int, 
         limit: int, 
+        user: UserModel,
         session: AsyncSession
     ):
+        # TODO вынести в отдельную функцию
+        if ROLE_ADMIN not in user.roles:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only admin can access this endpoint"
+            )
+        
         return await UserDAO.find_all(
             session,
             UserModel.active == True,

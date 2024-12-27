@@ -21,3 +21,10 @@ class ConflictUnicueAttribute(HTTPException):
             status_code=status.HTTP_409_CONFLICT,
             detail=detail
         )
+
+class RolesException(HTTPException):
+    def __init__(self, roles):
+        super().__init__(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Roles {', '.join(roles)} not found"
+        )

@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import Optional
 import uuid
 from fastapi import Depends, HTTPException, status
@@ -56,7 +57,7 @@ async def create_token_of_type(
             "id": str(refresh_id), 
         })
 
-        expire_minutes: int = settings.auth_jwt.refresh_token_expire_days * 60 * 24
+        expire_minutes: int = timedelta(days=settings.auth_jwt.refresh_token_expire_days)
 
     return await create_jwt(
         token_type=token_type,
@@ -98,24 +99,34 @@ async def get_current_auth_user_of_type_token(
     session: AsyncSession
 ):
     try:
+        print("decode")
         payload: dict = await decode_jwt(token)
 
+        print("validate_token_type")
         await validate_token_type(
             payload=payload,
             token_type=token_type
         )
 
+        print("get_user_by_token_sub")
         return await get_user_by_token_sub(
             payload=payload,
             session=session
         )
         
     except jwt.InvalidTokenError as e:
-        print(e)
+        print(f"InvalidTokenError {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="invalid token error"
         )
+    
+
+async def get_current_auth_user(
+        token:str = Depends(oauth2_scheme),
+        session: AsyncSession = Depends(db.session_dependency),
+):
+    return await get_current_auth_user_of_type_token(token=token, token_type=ACCESS_TOKEN_TYPE, session=session)
 
     
 

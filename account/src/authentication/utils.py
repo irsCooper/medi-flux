@@ -1,6 +1,7 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import uuid
 import bcrypt
+from fastapi.security import HTTPBearer, OAuth2PasswordBearer
 import jwt
 
 from src.core.config import settings
@@ -9,6 +10,10 @@ from src.core.config import settings
 TOKEN_TYPE_FIELD = "type"
 ACCESS_TOKEN_TYPE = "access"
 REFRESH_TOKEN_TYPE = "refresh"
+
+
+http_bearer = HTTPBearer(auto_error=False)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/Authentication/SignIn")
 
 
 async def hash_password(password: str) -> bytes: 
@@ -37,7 +42,7 @@ async def encode_jwt(
     now = datetime.utcnow()
     
     to_encode.update(
-        exp=int(now.timestamp()) + expire_minutes,
+        exp=now + timedelta(minutes=expire_minutes),
         iat=now,
         jti=str(uuid.uuid4())
     )

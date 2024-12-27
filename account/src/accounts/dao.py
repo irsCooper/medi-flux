@@ -7,7 +7,7 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
-from src.exceptions.DatabaseException import ConflictUnicueAttribute, UnknowanDatabaseException, DatabaseException
+from src.exceptions.DatabaseException import ConflictUnicueAttribute, RolesException, UnknowanDatabaseException, DatabaseException
 from src.accounts.schemas import ROLE_ADMIN, ROLE_DOCTOR, ROLE_MANAGER, UserCreateDB, UserUpdateDB, ROLE_USER
 from src.accounts.model import RoleModel, UserModel
 from src.base_dao import BaseDAO
@@ -29,14 +29,8 @@ class UserDAO(BaseDAO[UserModel, UserCreateDB, UserUpdateDB]):
         
         roles = create_data.pop("roles", None)
         
-        system_roles = [ROLE_ADMIN, ROLE_USER, ROLE_DOCTOR, ROLE_MANAGER]
-        if roles:
-            for role in roles:
-                if role not in system_roles:
-                    raise HTTPException(
-                        status_code=status.HTTP_404_NOT_FOUND,
-                        detail=f"Role {role} not found"
-                    )
+        if not roles:
+            roles = [ROLE_USER]
 
         try:
             stmt = (
@@ -44,28 +38,33 @@ class UserDAO(BaseDAO[UserModel, UserCreateDB, UserUpdateDB]):
                 .values(**create_data)
                 .returning(cls.model)
                 .options(
-                    selectinload(cls.model.roles),
-                    # selectinload(cls.model.refresh_session)
+                    selectinload(cls.model.roles)
                 )
             )
+
             result = await session.execute(stmt)
-            await session.commit()
             user: UserModel = result.scalars().first()
 
             if user:
-                if not roles:
-                    roles = [ROLE_USER]
-
                 new_roles_check = await session.execute(
                     select(RoleModel)
                     .where(RoleModel.name_role.in_(roles))
                 )
+
                 new_roles = new_roles_check.scalars().all()
+                missing_roles = set(roles) - {role.name_role for role in new_roles}
+
+                if missing_roles:
+                    raise RolesException(missing_roles)
+                
                 user.roles.extend(new_roles)
-                # await session.commit()
+                await session.commit()
                 return user
+            
         except IntegrityError:
             raise ConflictUnicueAttribute('Username is already exists')
+        except RolesException as e:
+            raise e
         except SQLAlchemyError as e:
             print(e)
             raise DatabaseException

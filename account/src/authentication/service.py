@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -29,8 +29,7 @@ class AuthService:
                 user_id=user.id,
                 reftesh_token_id=refresh_id,
                 reftesh_token=refresh_token,
-                access_token=access_token,
-                expire_in=int(datetime.utcnow().timestamp() + settings.auth_jwt.refresh_token_expire_days * 120 * 24),
+                expire_in=int(datetime.utcnow().timestamp() + timedelta(days=settings.auth_jwt.refresh_token_expire_days)),
             )
         )
         

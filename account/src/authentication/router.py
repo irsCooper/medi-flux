@@ -1,19 +1,19 @@
-from fastapi import APIRouter, Form, HTTPException, Request, status, Depends
-from fastapi.security import HTTPBearer
+from fastapi import APIRouter, HTTPException, Request, status, Depends
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.exceptions import ErrorResponseModel
 from src.authentication.schemas import CredentialsJSON, CredentialsForm, TokenInfo
 from src.authentication.service import AuthService
-from src.accounts.service import UserService
 from src.core.db_helper import db
-from src.accounts.schemas import UserCreate, UserCreateAdmin
+from src.accounts.schemas import UserCreate
+from src.dependencies import http_bearer
 
 
 router = APIRouter(
     prefix="/Authentication",
     tags=["Authentication"],
+    dependencies=[Depends(http_bearer)]
 )
 
 
@@ -58,13 +58,13 @@ async def sign_in(
     request: Request,
     session: AsyncSession = Depends(db.session_dependency)
 ) -> TokenInfo:
-    print(await request.json())
+    # print(await request.json())
     print(request.headers.get('content-type'))
     content_type = request.headers.get('content-type')
     if content_type == 'applocation/json':
         credentials = await request.json()
         credentials_model = CredentialsJSON(**credentials)
-    elif content_type == 'applocation/x-www-form-urlencoded':
+    elif content_type == 'application/x-www-form-urlencoded':
         form = await request.form()
         credentials_model = CredentialsForm(username=form["username"], password=form["password"])
     else:
