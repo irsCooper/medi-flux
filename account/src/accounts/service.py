@@ -47,7 +47,6 @@ class UserService:
                 detail="User not found"
             )
         if not user.refresh_session:
-            print("------------------------------------------------------------not refresh session---------------------------------------------------------")
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Not authorization"

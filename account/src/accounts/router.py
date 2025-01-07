@@ -7,7 +7,7 @@ from src.accounts.model import UserModel
 from src.accounts.service import UserService
 from src.accounts.schemas import ROLE_ADMIN, UserCreateAdmin, UserDB, UserUpdate, UserView
 from src.core.db_helper import db
-from src.dependencies import get_current_auth_user, get_current_role, http_bearer
+from src.dependencies import get_current_role, http_bearer, get_current_auth_access, get_current_auth_refresh
 
 
 router = APIRouter(
@@ -19,7 +19,7 @@ router = APIRouter(
 
 @router.get("/Me", response_model=UserView)
 async def get_user_info(
-    user: UserModel = Depends(get_current_auth_user),
+    user: UserModel = Depends(get_current_auth_access),
     session: AsyncSession = Depends(db.session_dependency)
 ):
     return await UserService.get_user(user_id=user.id, session=session)
@@ -28,7 +28,7 @@ async def get_user_info(
 @router.put("/Update", response_model=UserDB)
 async def update_user_info(
     user_update: UserUpdate,
-    user: UserModel = Depends(get_current_auth_user),
+    user: UserModel = Depends(get_current_auth_access),
     session: AsyncSession = Depends(db.session_dependency)
 ):
     return await UserService.update_user(user_id=user.id, user=user_update, session=session)
@@ -38,7 +38,7 @@ async def update_user_info(
 async def get_list_users_only_admin(
     offset: int,
     count: int,
-    user: UserModel = Depends(get_current_auth_user),
+    user: UserModel = Depends(get_current_auth_access),
     session: AsyncSession = Depends(db.session_dependency)
 ):
     await get_current_role(ROLE_ADMIN, user)
@@ -52,7 +52,7 @@ async def get_list_users_only_admin(
 @router.post("", status_code=status.HTTP_201_CREATED)
 async def create_user_only_admin(
     user_create: UserCreateAdmin,
-    user: UserModel = Depends(get_current_auth_user),
+    user: UserModel = Depends(get_current_auth_access),
     session: AsyncSession = Depends(db.session_dependency)
 ):
     await get_current_role(ROLE_ADMIN, user)
@@ -70,7 +70,7 @@ async def create_user_only_admin(
 async def update_user_info_only_admin(
     id: uuid.UUID,
     user_update: UserUpdate,
-    user: UserModel = Depends(get_current_auth_user),
+    user: UserModel = Depends(get_current_auth_access),
     session: AsyncSession = Depends(db.session_dependency)
 ):
     await get_current_role(ROLE_ADMIN, user)
@@ -81,7 +81,7 @@ async def update_user_info_only_admin(
 @router.delete("/{id}")
 async def delete_user_only_admin(
     id: uuid.UUID,
-    user: UserModel = Depends(get_current_auth_user),
+    user: UserModel = Depends(get_current_auth_access),
     session: AsyncSession = Depends(db.session_dependency)
 ):
     await get_current_role(ROLE_ADMIN, user)
