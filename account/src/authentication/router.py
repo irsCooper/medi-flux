@@ -8,7 +8,7 @@ from src.authentication.schemas import CredentialsJSON, CredentialsForm, TokenIn
 from src.authentication.service import AuthService
 from src.core.db_helper import db
 from src.accounts.schemas import UserCreate
-from src.dependencies import get_current_auth_user, http_bearer
+from src.dependencies import get_current_auth_access, http_bearer
 
 
 router = APIRouter(
@@ -76,7 +76,26 @@ async def sign_in(
 
 @router.put("/SingOut", status_code=status.HTTP_200_OK)
 async def sign_out(
-    user: UserModel = Depends(get_current_auth_user),
+    user: UserModel = Depends(get_current_auth_access),
     session: AsyncSession = Depends(db.session_dependency)
 ):
     return await AuthService.sing_out(user.id, session)
+
+
+@router.get("/Validate", status_code=status.HTTP_200_OK)
+async def validate_token(access_token: str):
+    token = await AuthService.validate_access_token(access_token)
+    if token: 
+        return token
+    return HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalit token"
+    )
+
+
+@router.post("/Refresh", status_code=status.HTTP_200_OK, response_model=TokenInfo)
+async def refresh_token(
+    refresh_token: str,
+    session: AsyncSession = Depends(db.session_dependency)
+):
+    return await AuthService.refresh_tokens(refresh_token, session)

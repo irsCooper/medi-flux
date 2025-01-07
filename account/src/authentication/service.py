@@ -9,8 +9,8 @@ from src.accounts.dao import UserDAO
 from src.accounts.model import UserModel
 from src.accounts.service import UserService
 from src.authentication.schemas import RefreshCreate, TokenInfo
-from src.authentication.utils import ACCESS_TOKEN_TYPE, REFRESH_TOKEN_TYPE, validate_password
-from src.dependencies import create_token_of_type
+from src.authentication.utils import ACCESS_TOKEN_TYPE, REFRESH_TOKEN_TYPE, decode_jwt, validate_password
+from src.dependencies import create_token_of_type, get_current_auth_user_of_type_token, validate_token_type
 from src.exceptions.AuthExceptions import InvalidCredentialsException
 from src.accounts.schemas import UserCreate
 from src.core.config import settings
@@ -81,6 +81,32 @@ class AuthService:
             session, 
             RefreshModel.user_id == user_id
         )
-        await session.commit()
+
+
+    @classmethod
+    async def validate_access_token(cls, access_token: str):
+        try: 
+            return await decode_jwt(access_token)
+        except Exception as e:
+            print(e)
+            return None
+        
+    
+    @classmethod
+    async def refresh_tokens(
+        cls,
+        refresh_token: str,
+        session: AsyncSession
+    ):
+        user = await get_current_auth_user_of_type_token(
+            token=refresh_token, 
+            token_type=REFRESH_TOKEN_TYPE, 
+            session=session
+        )
+
+        return await cls.create_token(
+            user=user,
+            session=session
+        )
 
     

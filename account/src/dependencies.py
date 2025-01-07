@@ -93,29 +93,40 @@ async def get_user_by_token_sub(
     )
 
 
+async def get_current_auth_user_of_type_token(
+    token: str,
+    token_type: str,
+    session: AsyncSession
+):
+    try:
+        payload: dict = await decode_jwt(token)
+        await validate_token_type(
+            payload=payload,
+            token_type=token_type
+        )
+        return await get_user_by_token_sub(
+            payload=payload,
+            session=session
+        )
+        
+    except jwt.InvalidTokenError as e:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="invalid token error"
+        )
+
+
+
 def get_current_auth_user(token_type: str) -> Optional[UserModel]:
     async def get_auth_user_from_token(
         token: str = Depends(oauth2_scheme),
         session: AsyncSession = Depends(db.session_dependency),
     ):
-        try:
-            payload: dict = await decode_jwt(token)
-
-            await validate_token_type(
-                payload=payload,
-                token_type=token_type
-            )
-
-            return await get_user_by_token_sub(
-                payload=payload,
-                session=session
-            )
-            
-        except jwt.InvalidTokenError as e:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="invalid token error"
-            )
+        return await get_current_auth_user_of_type_token(
+            token=token, 
+            token_type=token_type, 
+            session=session
+        )
     
     return get_auth_user_from_token
 
