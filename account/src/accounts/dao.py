@@ -82,7 +82,8 @@ class UserDAO(BaseDAO[UserModel, UserCreateDB, UserUpdateDB]):
         stmt = (
             select(cls.model)
             .options(
-                selectinload(cls.model.roles)
+                selectinload(cls.model.roles),
+                selectinload(cls.model.refresh_session)
             )
             .filter(*filters)
             .filter_by(**filter_by)

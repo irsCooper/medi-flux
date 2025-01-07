@@ -2,12 +2,13 @@ from fastapi import APIRouter, HTTPException, Request, status, Depends
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.accounts.model import UserModel
 from src.exceptions import ErrorResponseModel
 from src.authentication.schemas import CredentialsJSON, CredentialsForm, TokenInfo
 from src.authentication.service import AuthService
 from src.core.db_helper import db
 from src.accounts.schemas import UserCreate
-from src.dependencies import http_bearer
+from src.dependencies import get_current_auth_user, http_bearer
 
 
 router = APIRouter(
@@ -58,8 +59,6 @@ async def sign_in(
     request: Request,
     session: AsyncSession = Depends(db.session_dependency)
 ) -> TokenInfo:
-    # print(await request.json())
-    print(request.headers.get('content-type'))
     content_type = request.headers.get('content-type')
     if content_type == 'applocation/json':
         credentials = await request.json()
@@ -73,3 +72,11 @@ async def sign_in(
             detail="Unsupported media type"
         )
     return await AuthService.sign_in(credentials_model.username, credentials_model.password, session)
+
+
+@router.put("/SingOut", status_code=status.HTTP_200_OK)
+async def sign_out(
+    user: UserModel = Depends(get_current_auth_user),
+    session: AsyncSession = Depends(db.session_dependency)
+):
+    return await AuthService.sing_out(user.id, session)

@@ -50,7 +50,7 @@ async def create_token_of_type(
             "active": user.active,
         })
 
-        expire_minutes = settings.auth_jwt.access_token_expire_minutes 
+        expire_minutes: int = timedelta(minutes=settings.auth_jwt.access_token_expire_minutes)
         
     else:
         jwt_payload.update({
@@ -99,23 +99,19 @@ async def get_current_auth_user_of_type_token(
     session: AsyncSession
 ):
     try:
-        print("decode")
         payload: dict = await decode_jwt(token)
 
-        print("validate_token_type")
         await validate_token_type(
             payload=payload,
             token_type=token_type
         )
 
-        print("get_user_by_token_sub")
         return await get_user_by_token_sub(
             payload=payload,
             session=session
         )
         
     except jwt.InvalidTokenError as e:
-        print(f"InvalidTokenError {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="invalid token error"
@@ -123,22 +119,22 @@ async def get_current_auth_user_of_type_token(
     
 
 async def get_current_auth_user(
-        token:str = Depends(oauth2_scheme),
+        token: str = Depends(oauth2_scheme),
         session: AsyncSession = Depends(db.session_dependency),
-):
-    return await get_current_auth_user_of_type_token(token=token, token_type=ACCESS_TOKEN_TYPE, session=session)
-
-    
-
-
-async def get_from_oauth2_current_auth_user(
-    token: str = Depends(oauth2_scheme),
-    session: AsyncSession = Depends(db.session_dependency)
 ) -> Optional[UserModel]:
     return await get_current_auth_user_of_type_token(
-        token=token,
-        token_type=ACCESS_TOKEN_TYPE,
+        token=token, 
+        token_type=ACCESS_TOKEN_TYPE, 
         session=session
-    )
+    )    
 
 
+async def get_current_role(
+    name_role: str,
+    user: UserModel
+): 
+    if name_role not in user.roles:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Not enough privileges"
+        )

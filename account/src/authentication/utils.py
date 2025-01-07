@@ -40,9 +40,10 @@ async def encode_jwt(
 ):
     to_encode = payload.copy()
     now = datetime.utcnow()
+    print(expire_minutes)
     
     to_encode.update(
-        exp=now + timedelta(minutes=expire_minutes),
+        exp=now + expire_minutes,
         iat=now,
         jti=str(uuid.uuid4())
     )

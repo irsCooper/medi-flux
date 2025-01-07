@@ -3,6 +3,7 @@ from typing import Optional
 import uuid
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.authentication.model import RefreshModel
 from src.authentication.dao import RefreshTokenDAO
 from src.accounts.dao import UserDAO
 from src.accounts.model import UserModel
@@ -29,7 +30,7 @@ class AuthService:
                 user_id=user.id,
                 reftesh_token_id=refresh_id,
                 reftesh_token=refresh_token,
-                expire_in=int(datetime.utcnow().timestamp() + timedelta(days=settings.auth_jwt.refresh_token_expire_days)),
+                expire_in=int((datetime.utcnow() + timedelta(days=settings.auth_jwt.refresh_token_expire_days)).timestamp()),
             )
         )
         
@@ -64,14 +65,22 @@ class AuthService:
             user_name=username
         )
 
-        print(user)
-
         if user and user.active and await validate_password(password, user.hashed_password):
             return await cls.create_token(user, session)
         
         raise InvalidCredentialsException
     
 
-
+    @classmethod
+    async def sing_out(
+        cls,
+        user_id: uuid.UUID,
+        session: AsyncSession
+    ):
+        await RefreshTokenDAO.delete(
+            session, 
+            RefreshModel.user_id == user_id
+        )
+        await session.commit()
 
     
