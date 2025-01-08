@@ -13,5 +13,27 @@ services:
     volumes:
       - postgres_data_test4:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - work
+
+  account_service:
+    build:
+      context: ./account/
+    container_name: account_service
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres
+      # - rabbitmq
+      # - redis
+    env_file:
+      - ./account/.env
+    networks:
+      - work
+
+networks:
+  work:
+    driver: bridge
+
 volumes:
   postgres_data_test4:
