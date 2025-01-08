@@ -1,7 +1,7 @@
 from typing import Any, Dict, Generic, Optional, TypeVar, Union
 from pydantic import BaseModel
 
-from sqlalchemy import delete, insert
+from sqlalchemy import delete, func, insert, select, update
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -46,9 +46,26 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
 
     @classmethod
-    async def update():
-        pass 
+    async def update(
+        cls,
+        session: AsyncSession,
+        *where,
+        obj_in: Union[UpdateSchemaType, Dict[str, Any]],
+    ) -> Optional[ModelType]:
+        if isinstance(obj_in, dict):
+            update_data = obj_in
+        else:
+            update_data = obj_in.model_dump(exclude_unset=True)
+        
+        stmt = (
+            update(cls.model)
+            .where(*where)
+            .values(**update_data)
+            .returning(cls.model)
+        )
 
+        result = await session.execute(stmt)
+        return result.scalars().one_or_none()
 
 
 
@@ -72,12 +89,41 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
 
     @classmethod
-    async def count():
-        pass 
+    async def count(
+        cls,
+        session: AsyncSession,
+        *filters,
+        **filter_by
+    ):
+        stmt = (
+            select(func.count())
+            .select_from(cls.model)
+            .filter(*filters)
+            .filter_by(**filter_by)
+        ) 
+
+        result = await session.execute(stmt)
+        return result.scalar()
 
 
 
 
     @classmethod
-    async def find_all():
-        pass 
+    async def find_all(
+        cls, 
+        session: AsyncSession,
+        *filters,
+        offset: int = 0,
+        limit: int = 100,
+        **filter_by
+    ):
+        stmt = (
+            select(cls.model)
+            .filter(*filters)
+            .filter_by(**filter_by)
+            .offset(offset)
+            .limit(limit)
+        )
+
+        result = await session.execute(stmt)
+        return result.scalars().all()
