@@ -127,3 +127,20 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
 
         result = await session.execute(stmt)
         return result.scalars().all()
+    
+
+    @classmethod
+    async def find_one_or_none(
+        cls,
+        session: AsyncSession,
+        *filters,
+        **filter_by
+    ) -> Optional[ModelType]:
+        stmt = (
+            select(cls.model)
+            .filter(*filters)
+            .filter_by(**filter_by)
+        )
+
+        result = await session.execute(stmt)
+        return result.scalars().one_or_none()
