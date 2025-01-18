@@ -11,7 +11,7 @@ services:
     ports:
       - "5432:5432"                 
     volumes:
-      - postgres_data_test4:/var/lib/postgresql/data
+      - postgres_data_test5:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - work
@@ -36,4 +36,4 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data_test4:
+  postgres_data_test5:

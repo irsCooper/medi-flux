@@ -1,8 +1,7 @@
-
-
 from typing import List
-import uuid
 from pydantic import BaseModel, ConfigDict
+
+import uuid
 
 
 class RoomSchema(BaseModel):
@@ -12,18 +11,19 @@ class RoomSchema(BaseModel):
 class HospitalSchema(BaseModel):
     id: uuid.UUID
     name: str
-    addresss: str
+    address: str
     contactPhone: str
     rooms: List[RoomSchema]
 
 
 class HospitalDB(HospitalSchema):
+    is_deleted: bool = False
     model_config = ConfigDict(from_attributes=True)
 
 
 class HospitalCreate(BaseModel):
     name: str
-    addresss: str
+    address: str
     contactPhone: str
     rooms: List[RoomSchema]
 

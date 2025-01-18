@@ -1,5 +1,5 @@
 import uuid
-from sqlalchemy import Boolean, ForeignKey, Integer, String
+from sqlalchemy import UUID, Boolean, ForeignKey, Integer, String
 from ..base_model import BaseModel
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -15,7 +15,7 @@ class HospitalRoomsModel(BaseModel):
 class RoomModel(BaseModel):
     __tablename__ = 'rooms'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String, nullable=False)
 
     hospitals: Mapped[list["HospitalModel"]] = relationship(
@@ -30,7 +30,7 @@ class RoomModel(BaseModel):
 class HospitalModel(BaseModel):
     __tablename__ = 'hospitals'
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
     name: Mapped[str] = mapped_column(String, nullable=False, unique=True)
     address: Mapped[str] = mapped_column(String, nullable=False)
     contactPhone: Mapped[str] = mapped_column(String(300), nullable=False, unique=True)
