@@ -26,6 +26,9 @@ docker inspect postgres | grep IPAddress
 
 alembic init -t async alembic
 
+alembic revision -m "update hopital model add is_deleted" --autogenerate
+
+alembic upgrade head
 
 
 postgresql://%(DB_USER)s:%(DB_PASS)s@%(DB_HOST)s:%(DB_PORT)s/%(DB_NAME)s
