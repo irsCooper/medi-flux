@@ -54,3 +54,4 @@ networks:
 
 volumes:
   postgres_data_test4:
+  rabbitmq-data:
