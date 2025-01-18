@@ -12,7 +12,7 @@ router =APIRouter(
     tags=["Hospitals"]
 )
 
-@router.get("", response_model_exclude=list[HospitalSchema])
+@router.get("", response_model=list[HospitalSchema])
 async def get_list_hospitals(
     offset: int = Query(..., alias='from', ge=0),
     limit: int = Query(..., alias='count', ge=1),
@@ -25,7 +25,7 @@ async def get_list_hospitals(
     )
 
 
-@router.get("/{id}", response_model_exclude=HospitalSchema)
+@router.get("/{id}", response_model=HospitalSchema)
 async def get_hospital_by_id(
     id: uuid.UUID,
     session: AsyncSession = Depends(db.session_dependency)
@@ -36,7 +36,7 @@ async def get_hospital_by_id(
     )
 
 
-@router.get("/{id}/Rooms", response_model_exclude=RoomSchema)
+@router.get("/{id}/Rooms", response_model=list[RoomSchema])
 async def get_romms_in_hospital_by_id(
     id: uuid.UUID,
     session: AsyncSession = Depends(db.session_dependency)
@@ -58,7 +58,7 @@ async def create_hospital_only_admin(
     ) 
 
 
-@router.put("/{id}")
+@router.put("/{id}", response_model=HospitalSchema)
 async def update_hospital_info_by_id_only_admin(
     data: HospitalUpdate,
     session: AsyncSession = Depends(db.session_dependency)

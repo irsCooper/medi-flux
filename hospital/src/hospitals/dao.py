@@ -161,7 +161,46 @@ class HospitalDAO(BaseDAO[HospitalModel, HospitalCreate, HospitalUpdate]):
             raise UnknowanDatabaseException
         
 
-    # @classmethod
-    # async def find_one_or_none(
-    #     cls
-    # )
+    @classmethod
+    async def find_one_or_none(
+        cls,
+        session: AsyncSession,
+        *filters,
+        **filter_by
+    ) -> Optional[HospitalModel]:
+        stmt = (
+            select(cls.model)
+            .options(
+                selectinload(cls.model.rooms)
+            )
+            .filter(*filters)
+            .filter_by(**filter_by)
+        )
+
+        result = await session.execute(stmt)
+        return result.scalars().one_or_none()
+    
+
+    @classmethod
+    async def find_all(
+        cls,
+        session: AsyncSession,
+        *filters,
+        offset: int = 0,
+        limit: int = 100,
+        **filter_by
+    ) -> Optional[list[HospitalModel]]:
+        stmt = (
+            select(cls.model)
+            .options(
+                selectinload(cls.model.rooms)
+            )
+            # .join(cls.model.rooms)
+            .filter(*filters)
+            .filter_by(**filter_by)
+            .offset(offset)
+            .limit(limit)
+        )
+
+        result = await session.execute(stmt)
+        return result.scalars().all()
