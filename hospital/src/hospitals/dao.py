@@ -1,8 +1,8 @@
 from typing import Any, Dict, Optional, Union
 
-from fastapi import HTTPException, status
 from sqlalchemy import insert, select, update
 
+from src.exception.HospitalException import HospitalNotFound
 from src.exception import DatabaseException, UnknowanDatabaseException
 from src.hospitals.schemas import HospitalCreate, HospitalUpdate
 from src.hospitals.model import HospitalModel, RoomModel
@@ -37,10 +37,7 @@ class HospitalDAO(BaseDAO[HospitalModel, HospitalCreate, HospitalUpdate]):
         hospitals = result.scalars().one_or_none()
 
         if not hospitals:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail='Hospital not found'
-            )
+            raise HospitalNotFound
 
         return hospitals.rooms
 
@@ -52,16 +49,18 @@ class HospitalDAO(BaseDAO[HospitalModel, HospitalCreate, HospitalUpdate]):
         rooms,
         hospital: HospitalModel
     ):
+        room_names = [room['name'] for room in rooms]
+        
         existing_rooms_stmt = (
             select(RoomModel)
-            .where(RoomModel.name.in_(rooms))
+            .where(RoomModel.name.in_(room_names))
         )
 
         result = await session.execute(existing_rooms_stmt)
         existing_rooms = result.scalars().all()
 
         # Убираем существующие комнаты, оставляем только те, которые нужно создать
-        new_rooms_names = set(rooms) - {room.name for room in existing_rooms}
+        new_rooms_names = set(room_names) - {room.name for room in existing_rooms}
 
         if new_rooms_names:
             new_rooms_stmt = (
@@ -100,7 +99,9 @@ class HospitalDAO(BaseDAO[HospitalModel, HospitalCreate, HospitalUpdate]):
                 insert(cls.model)
                 .values(**create_data)
                 .returning(cls.model)
-                .options(cls.model.rooms)
+                .options(
+                    selectinload(cls.model.rooms)
+                )
             )
 
             result = await session.execute(stmt)
@@ -109,8 +110,10 @@ class HospitalDAO(BaseDAO[HospitalModel, HospitalCreate, HospitalUpdate]):
             if rooms:
                 await cls.update_romms(session, rooms, hospital)
 
+            await session.commit()
             return hospital
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
+            print(e)
             raise DatabaseException
         except Exception as e:
             print(e)
@@ -129,7 +132,7 @@ class HospitalDAO(BaseDAO[HospitalModel, HospitalCreate, HospitalUpdate]):
         else: 
             update_data = obj_in.model_dump(exclude_unset=True)
 
-        rooms = obj_in.pop("rooms", None)
+        rooms = update_data.pop("rooms", None)
 
         try:
             stmt = (
@@ -148,9 +151,17 @@ class HospitalDAO(BaseDAO[HospitalModel, HospitalCreate, HospitalUpdate]):
             if rooms:
                 await cls.update_romms(session, rooms, hospital)
 
+            await session.commit()
             return hospital
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
+            print(e)
             raise DatabaseException
         except Exception as e:
             print(e)
             raise UnknowanDatabaseException
+        
+
+    # @classmethod
+    # async def find_one_or_none(
+    #     cls
+    # )
