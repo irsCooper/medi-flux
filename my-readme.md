@@ -25,6 +25,8 @@ docker inspect postgres | grep IPAddress
 
 
 alembic init -t async alembic
+alembic revision -m "create timetable" --autogenerate
+alembic upgrade head
 
 
 
