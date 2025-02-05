@@ -4,7 +4,7 @@ import uuid
 from sqlalchemy import TIMESTAMP, UUID, String
 from src.base_model import BaseModel
 
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
 class Timetable(BaseModel):
@@ -16,3 +16,10 @@ class Timetable(BaseModel):
     from_column: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False)
     to: Mapped[datetime] = mapped_column(TIMESTAMP(timezone=True), nullable=False)
     room: Mapped[str] = mapped_column(String, nullable=False)
+
+    appointments = relationship(
+        "Appointment",
+        back_populates="timetable",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
