@@ -52,7 +52,7 @@ async def check_pacient(
                 await get_current_role(ROLE_USER, user)
                 response = b'\x01'
         except HTTPException:
-            response = b'\x00'
+            response = b'\x01'
 
         if message.reply_to:
             await channel.default_exchange.publish(
