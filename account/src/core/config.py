@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     auth_jwt: AuthJWT = AuthJWT()
     echo: bool = True 
     db_url: str = os.environ.get('DB_URL')
+    rabbit_mq_url: str = os.environ.get('RMQ_URL')
 
 
 

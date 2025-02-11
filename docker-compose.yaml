@@ -1,6 +1,21 @@
-version: '3.8'
+# version: '3.8'
 
 services:
+  rabbitmq:
+    image: rabbitmq:4-management
+    hostname: rabbitmq
+    container_name: rabbit_mq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - work
+
   postgres:
     image: postgres:latest
     container_name: postgres
@@ -24,16 +39,18 @@ services:
       - "8081:8081"
     depends_on:
       - postgres
-      # - rabbitmq
+      - rabbitmq
       # - redis
     env_file:
       - ./account/.env
     networks:
       - work
 
+
+
 networks:
   work:
     driver: bridge
 
 volumes:
-  postgres_data_test5:
+  postgres_data_test4:

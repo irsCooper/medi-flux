@@ -13,4 +13,4 @@ RUN pip3 install -r requirements.txt
 
 COPY . .
 
-CMD ["sh", "-c", "alembic upgrade head && python3 main.py"]
+CMD ["sh", "-c", "sleep 10; alembic upgrade head && python3 main.py"]
