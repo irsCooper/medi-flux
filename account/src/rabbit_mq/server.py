@@ -5,10 +5,11 @@ from aio_pika.abc import AbstractIncomingMessage
 from aio_pika import RobustChannel, Message, connect_robust
 from fastapi import HTTPException
 
-from account.src.accounts.service import UserService
-from account.src.authentication.router import validate_token
-from account.src.core.db_helper import db
-from account.src.doctors.service import DoctorSrvice
+from src.accounts.service import UserService
+from src.authentication.router import validate_token
+from src.core.db_helper import db
+from src.doctors.service import DoctorSrvice
+from src.core.config import settings
 
 async def check_doctor(
     message: AbstractIncomingMessage,
@@ -47,7 +48,7 @@ async def check_pacient(
                 user = await UserService.get_user(uuid.UUID(user_id), session)
                 response = b'\x00' if 'User' not in [role.name_role for role in user.roles] else b'\x01'
         except HTTPException:
-            response = b'\x00'
+            response = b'\x01'
 
         if message.reply_to:
             await channel.default_exchange.publish(
@@ -84,24 +85,25 @@ async def check_token(
 async def consume_rabbitmq():
     while True:
         try:
-            connection = await connect_robust(
-                f'amqp://{settings.RABBITMQ_USER}:{settings.RABBITMQ_PASSWORD}@{settings.RABBITMQ_HOST}/'
-            )
+            connection = await connect_robust(settings.rabbit_mq_url)
             channel = await connection.channel()
 
             doctor_queue = await channel.declare_queue(
                 'check_doctor', auto_delete=True
             )
+
             await doctor_queue.consume(partial(check_doctor, channel=channel))
 
             token_queue = await channel.declare_queue(
                 'check_token', auto_delete=True
             )
+
             await token_queue.consume(partial(check_token, channel=channel))
 
             user_queue = await channel.declare_queue(
                 'check_pacient', auto_delete=True
             )
+
             await user_queue.consume(partial(check_pacient, channel=channel))
 
             print('Успешное подключение к RabbitMQ')
