@@ -45,7 +45,9 @@ async def create_token_of_type(
 
     if token_type == ACCESS_TOKEN_TYPE:
         jwt_payload.update({
-            "user_name": user.user_name,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "roles": [role.name_role for role in user.roles],
             "active": user.active,
         })
 
