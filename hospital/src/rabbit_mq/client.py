@@ -73,14 +73,13 @@ class RabbitMqClient(RabbitMqBase):
         self,
         body: str,
         routing_key: str,
+        channel: AbstractChannel,
         callback_queue: AbstractQueue,
         correlation_id: str,
         timeout: float = 5.0
     ):
         await self.connect()
         async with self.connection:
-            channel = await self.connection.channel()
-
             await self.publish_message(
                 channel=channel,
                 body=body.encode(),
@@ -88,15 +87,14 @@ class RabbitMqClient(RabbitMqBase):
                 correlation_id=correlation_id,
                 reply_to=callback_queue.name
             )
-            response = await self.wait_for_response(callback_queue, correlation_id)
+
+            response = await self.wait_for_response(
+                callback_queue, correlation_id, timeout
+            )
 
         await self.close()
         return True if response == b'\x01' else response.decode()
-
-
-    async def create_channel(self):
-        channel = await self.connection.channel()
-        return channel
+    
     
     async def create_queue(self, channel: AbstractChannel):
         callback_queue = await channel.declare_queue(auto_delete=True)

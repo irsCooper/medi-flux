@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query
 from src.hospitals.service import HospitalService
 from src.hospitals.schemas import HospitalCreate, HospitalSchema, HospitalUpdate, RoomSchema
 from src.core.db_helper import db
+from src.dependencies import validate_token
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -28,7 +29,8 @@ async def get_list_hospitals(
 @router.get("/{id}", response_model=HospitalSchema)
 async def get_hospital_by_id(
     id: uuid.UUID,
-    session: AsyncSession = Depends(db.session_dependency)
+    session: AsyncSession = Depends(db.session_dependency),
+    valid_token: dict = Depends(validate_token)
 ):
     return await HospitalService.get_hospital(
         hospital_id=id,
