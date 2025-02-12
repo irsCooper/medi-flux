@@ -71,7 +71,7 @@ async def check_token(
     async with message.process():
         token = message.body.decode()
         try:
-            await validate_token(token=token)
+            await validate_token(token)
             response = b'\x01'
         except HTTPException as e:
             response = str(e.detail).encode()
