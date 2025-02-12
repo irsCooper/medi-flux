@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query
 from src.hospitals.service import HospitalService
 from src.hospitals.schemas import HospitalCreate, HospitalSchema, HospitalUpdate, RoomSchema
 from src.core.db_helper import db
-from src.dependencies import validate_token
+from src.dependencies import validate_token, get_current_role
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,8 +17,10 @@ router =APIRouter(
 async def get_list_hospitals(
     offset: int = Query(..., alias='from', ge=0),
     limit: int = Query(..., alias='count', ge=1),
-    session: AsyncSession = Depends(db.session_dependency)
+    session: AsyncSession = Depends(db.session_dependency),
+    valid_token: dict = Depends(validate_token)
 ):
+    await get_current_role(valid_token)
     return await HospitalService.get_hospitals(
         offset=offset,
         limit=limit,
@@ -41,7 +43,8 @@ async def get_hospital_by_id(
 @router.get("/{id}/Rooms", response_model=list[RoomSchema])
 async def get_romms_in_hospital_by_id(
     id: uuid.UUID,
-    session: AsyncSession = Depends(db.session_dependency)
+    session: AsyncSession = Depends(db.session_dependency),
+    valid_token: dict = Depends(validate_token)
 ):
     return await HospitalService.get_list_rooms(
         hospital_id=id,
