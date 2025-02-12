@@ -1,22 +1,22 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
-from sqlalchemy.orm.strategy_options import selectinload
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-
-from src.core.db_helper import db
 from src.authentication.router import router as router_authentication
 from src.accounts.router import router as router_account
 from src.doctors.router import router as router_doctors
+from src.rabbit_mq.server import consume_rabbitmq
 
 import uvicorn
+import asyncio
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    yield
-    # await db.dispose()
+    task = asyncio.create_task(consume_rabbitmq())
+    try: 
+        yield
+    finally:
+        task.cancel()
 
 
 

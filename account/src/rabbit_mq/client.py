@@ -27,36 +27,38 @@ class RabbitMqClient(RabbitMqBase):
         )
 
 
-    async def call(self, body: str):
+    async def call(self, body: str, routing_key: str):
         await self.connect()
         async with self.connection:
             channel = await self.connection.channel()
 
             await self.publish_message(
                 channel=channel,
-                body=body,
-                routing_key=ROUTING_KEY_DELETE_TIMETABLE_DOCTOR
+                body=body.encode(),
+                routing_key=routing_key
             )
         await self.close()
 
 
-    async def pocess_message(
-        message: AbstractIncomingMessage,
-        channel: AbstractChannel,
-        handler: Callable[[Any], bytes],
-        *handler_args
-    ):
-        async with message.process():
-            try:
-                response = await handler(*handler_args)
-            except HTTPException as e:
-                response = str(e).encode()
+    # async def pocess_message(
+    #     message: AbstractIncomingMessage,
+    #     channel: AbstractChannel,
+    #     handler: Callable[[Any], bytes],
+    #     *handler_args
+    # ):
+    #     async with message.process():
+    #         try:
+    #             response = await handler(*handler_args)
+    #         except HTTPException as e:
+    #             response = str(e).encode()
 
-            if message.reply_to:
-                await channel.default_exchange.publish(
-                    Message(
-                        body=response,
-                        correlation_id=message.correlation_id
-                    ),
-                    routing_key=message.reply_to
-                )
+    #         if message.reply_to:
+    #             await channel.default_exchange.publish(
+    #                 Message(
+    #                     body=response,
+    #                     correlation_id=message.correlation_id
+    #                 ),
+    #                 routing_key=message.reply_to
+    #             )
+
+rabbit_mq_client = RabbitMqClient()

@@ -10,6 +10,8 @@ from src.authentication.router import validate_token
 from src.core.db_helper import db
 from src.doctors.service import DoctorSrvice
 from src.core.config import settings
+from src.accounts.schemas import ROLE_USER
+from src.dependencies import delete_timetable_doctor, get_current_role
 
 async def check_doctor(
     message: AbstractIncomingMessage,
@@ -19,7 +21,7 @@ async def check_doctor(
         doctor_id = message.body.decode()
         try:
             async with db.session_dependency() as session:
-                doctor = await DoctorSrvice.get_doctor(
+                await DoctorSrvice.get_doctor(
                     uuid.UUID(doctor_id),
                     session
                 )
@@ -46,9 +48,11 @@ async def check_pacient(
         try:
             async with db.session_dependency() as session:
                 user = await UserService.get_user(uuid.UUID(user_id), session)
-                response = b'\x00' if 'User' not in [role.name_role for role in user.roles] else b'\x01'
+                # response = b'\x00' if ROLE_USER not in [role.name_role for role in user.roles] else b'\x01'
+                await get_current_role(ROLE_USER, user)
+                response = b'\x01'
         except HTTPException:
-            response = b'\x01'
+            response = b'\x00'
 
         if message.reply_to:
             await channel.default_exchange.publish(

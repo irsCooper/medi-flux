@@ -8,13 +8,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import jwt
 
-from src.accounts.dao import UserDAO
 from src.accounts.service import UserService
 from src.accounts.model import UserModel
 from src.authentication.utils import ACCESS_TOKEN_TYPE, REFRESH_TOKEN_TYPE, TOKEN_TYPE_FIELD, decode_jwt, encode_jwt
 from src.core.config import settings
 from src.core.db_helper import db
-
+from src.rabbit_mq.client import rabbit_mq_client
 
 http_bearer = HTTPBearer(auto_error=False)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/Authentication/SignIn")
@@ -144,3 +143,6 @@ async def get_current_role(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough privileges"
         )
+
+async def delete_timetable_doctor(doctor_id: uuid.UUID):
+    await rabbit_mq_client.call(str(doctor_id))
