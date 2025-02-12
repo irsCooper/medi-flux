@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 import jwt
 
-from src.accounts.service import UserService
+import src.accounts.service
 from src.accounts.model import UserModel
 from src.authentication.utils import ACCESS_TOKEN_TYPE, REFRESH_TOKEN_TYPE, TOKEN_TYPE_FIELD, decode_jwt, encode_jwt
 from src.core.config import settings
@@ -83,7 +83,7 @@ async def get_user_by_token_sub(
     session: AsyncSession
 ) -> Optional[UserModel]:
     user_id = payload.get("sub")
-    user: UserModel = await UserService.get_user(user_id=user_id, session=session) 
+    user: UserModel = await src.accounts.service.UserService.get_user(user_id=user_id, session=session) 
     if user:
         return user 
     raise HTTPException(
