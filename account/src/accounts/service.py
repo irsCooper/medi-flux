@@ -5,11 +5,12 @@ import uuid
 from fastapi import HTTPException, status
 from sqlalchemy import and_ 
 
-from src.accounts.schemas import ROLE_ADMIN, ROLE_USER, UserUpdate, UserUpdateAdmin, UserUpdateDB
+from src.accounts.schemas import ROLE_ADMIN, ROLE_DOCTOR, ROLE_USER, UserUpdate, UserUpdateAdmin, UserUpdateDB
 from src.accounts.model import  UserModel
 from src.authentication.utils import hash_password
 from src.accounts.dao import UserDAO
 from src.accounts.schemas import UserCreate, UserCreateAdmin, UserCreateDB
+from src.dependencies import delete_timetable_doctor, get_current_role
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -76,6 +77,11 @@ class UserService:
         user: UserUpdate | UserUpdateAdmin,
         session: AsyncSession
     ):
+        if isinstance(user, UserUpdateAdmin):
+            current_user = await cls.get_user(user_id, session)
+            if ROLE_DOCTOR not in current_user.roles and ROLE_DOCTOR not in [role.name_role for role in user.roles]:
+                await delete_timetable_doctor(current_user.id)
+                
         user_update = await UserDAO.update(
             session,
             and_(UserModel.id == user_id, UserModel.active == True),
