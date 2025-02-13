@@ -149,5 +149,3 @@ async def get_current_role(
 
 async def delete_timetable_doctor(doctor_id: uuid.UUID):
     await rabbit_mq_client.call(str(doctor_id))
-async def delete_timetable_doctor(doctor_id: uuid.UUID):
-    await rabbit_mq_client.call(str(doctor_id))
