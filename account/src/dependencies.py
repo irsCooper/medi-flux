@@ -14,6 +14,7 @@ from src.authentication.utils import ACCESS_TOKEN_TYPE, REFRESH_TOKEN_TYPE, TOKE
 from src.core.config import settings
 from src.core.db_helper import db
 from src.rabbit_mq.client import rabbit_mq_client
+from src.rabbit_mq.client import rabbit_mq_client
 
 http_bearer = HTTPBearer(auto_error=False)
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/Authentication/SignIn")
