@@ -46,6 +46,21 @@ services:
     networks:
       - work
 
+  hospital_service:
+    build:
+      context: ./hospital/
+    container_name: hospital_service
+    ports:
+      - "8082:8082"
+    depends_on:
+      - postgres
+      - rabbitmq
+      # - redis
+    env_file:
+      - ./hospital/.env
+    networks:
+      - work
+
 
 
 networks:
