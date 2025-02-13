@@ -7,7 +7,7 @@ from src.base_model import BaseModel
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
-class Timetable(BaseModel):
+class TimetableModel(BaseModel):
     __tablename__ = 'timetable'
 
     id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)

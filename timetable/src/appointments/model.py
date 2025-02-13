@@ -8,7 +8,7 @@ from src.base_model import BaseModel
 
 
 
-class Appointment(BaseModel):
+class AppointmentModel(BaseModel):
     __tablename__ = 'appointments'
 
     id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
