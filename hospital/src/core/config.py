@@ -4,6 +4,11 @@ from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
 from pydantic import BaseModel
 
+ROLE_ADMIN = 'Admin'
+ROLE_USER = 'User'
+ROLE_MANAGER = 'Manager'
+ROLE_DOCTOR = 'Doctor'
+
 
 BASE_DIR = Path(__file__).parent.parent.parent
 

@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query
 from src.hospitals.service import HospitalService
 from src.hospitals.schemas import HospitalCreate, HospitalSchema, HospitalUpdate, RoomSchema
 from src.core.db_helper import db
+from src.core.config import ROLE_ADMIN
 from src.dependencies import validate_token, get_current_role
 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,7 +21,6 @@ async def get_list_hospitals(
     session: AsyncSession = Depends(db.session_dependency),
     valid_token: dict = Depends(validate_token)
 ):
-    await get_current_role(valid_token)
     return await HospitalService.get_hospitals(
         offset=offset,
         limit=limit,
@@ -55,8 +55,10 @@ async def get_romms_in_hospital_by_id(
 @router.post("", response_model=HospitalSchema)
 async def create_hospital_only_admin(
     data: HospitalCreate,
-    session: AsyncSession = Depends(db.session_dependency)
+    session: AsyncSession = Depends(db.session_dependency),
+    valid_token: dict = Depends(validate_token)
 ):
+    await get_current_role([ROLE_ADMIN], valid_token)
     return await HospitalService.create_hospital(
         data=data,
         session=session
@@ -66,8 +68,10 @@ async def create_hospital_only_admin(
 @router.put("/{id}", response_model=HospitalSchema)
 async def update_hospital_info_by_id_only_admin(
     data: HospitalUpdate,
-    session: AsyncSession = Depends(db.session_dependency)
+    session: AsyncSession = Depends(db.session_dependency),
+    valid_token: dict = Depends(validate_token)
 ):
+    await get_current_role([ROLE_ADMIN], valid_token)
     return await HospitalService.update_hospital(
         hospital_id=data.id,
         data=data,
@@ -78,8 +82,10 @@ async def update_hospital_info_by_id_only_admin(
 @router.delete("/{id}")
 async def delete_hospital_by_id_only_admin(
     id: uuid.UUID,
-    session: AsyncSession = Depends(db.session_dependency)
+    session: AsyncSession = Depends(db.session_dependency),
+    valid_token: dict = Depends(validate_token)
 ):
+    await get_current_role([ROLE_ADMIN], valid_token)
     return await HospitalService.delete_hospital(
         hospital_id=id,
         session=session
