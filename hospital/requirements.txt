@@ -43,3 +43,5 @@ uvloop==0.21.0
 watchfiles==1.0.3
 websockets==14.1
 aio_pika==9.5.4
+asyncpg==0.30.0
+PyJWT==2.10.1
