@@ -7,6 +7,8 @@ from sqlalchemy import delete, func, insert, update, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError
 
+from src.exception.DataBaseException import DatabaseException, UnknowanDatabaseException, ConflictUniqueAttribute
+
 
 ModelType = TypeVar('ModelType', bound=BaseModel)
 CreateSchemaType = TypeVar('CreateSchemaType', bound=BaseModel)
@@ -38,10 +40,10 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             await session.commit()
             return result.scalars().first()
         except SQLAlchemyError:
-            raise #TODO custom error
+            raise DatabaseException
         except Exception as e:
             print(e)
-            raise #TODO custom error
+            raise UnknowanDatabaseException
 
     @classmethod
     async def update(
@@ -53,7 +55,7 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         if isinstance(obj_in, dict):
             update_data = obj_in
         else: 
-            update_data =obj_in.model_dump(exclude_unset=True)
+            update_data = obj_in.model_dump(exclude_unset=True)
 
         stmt = (
             update(cls.model)
