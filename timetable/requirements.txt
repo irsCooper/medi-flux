@@ -14,3 +14,4 @@ cffi==1.17.1
 cryptography==43.0.3 
 pycparser==2.22
 asyncpg==0.30.0
+aio-pika==9.5.4
