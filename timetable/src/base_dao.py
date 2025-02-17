@@ -1,6 +1,4 @@
-from ctypes import Union
-from typing import Any, Dict, Generic, Optional, TypeVar
-from click import Option
+from typing import Any, Dict, Generic, Optional, TypeVar, Union
 from pydantic import BaseModel
 
 from sqlalchemy import delete, func, insert, update, select
@@ -23,7 +21,7 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         cls,
         session: AsyncSession,
         obj_in: Union[CreateSchemaType, Dict[str, Any]],
-    ) -> Option[ModelType]:
+    ) -> Optional[ModelType]:
         if isinstance(obj_in, dict):
             create_data = obj_in 
         else: 
@@ -39,7 +37,8 @@ class BaseDAO(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
             result = await session.execute(stmt)
             await session.commit()
             return result.scalars().first()
-        except SQLAlchemyError:
+        except SQLAlchemyError as e:
+            print(e)
             raise DatabaseException
         except Exception as e:
             print(e)
