@@ -8,7 +8,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 
 class TimetableModel(BaseModel):
-    __tablename__ = 'timetable'
+    __tablename__ = 'timetables'
 
     id: Mapped[uuid.UUID] = mapped_column(UUID, primary_key=True, default=uuid.uuid4)
     hospital_id: Mapped[uuid.UUID] = mapped_column(UUID, index=True, nullable=False)
@@ -18,7 +18,7 @@ class TimetableModel(BaseModel):
     room: Mapped[str] = mapped_column(String, nullable=False)
 
     appointments = relationship(
-        "Appointment",
+        "AppointmentModel",
         back_populates="timetable",
         cascade="all, delete-orphan",
         passive_deletes=True
