@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.timetables.router import router as router_timetable
+from src.appointments.router import router as router_appointment
 # from src.rabbit_mq.server import consume_rabbitmq
 
 import uvicorn
@@ -27,6 +28,7 @@ app = FastAPI(
 )
 
 app.include_router(router_timetable)
+app.include_router(router_appointment)
 
 app.add_middleware(
     CORSMiddleware,

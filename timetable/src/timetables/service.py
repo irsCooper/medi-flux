@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 import uuid
 from fastapi import HTTPException, status
@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.timetables.schemas import TimetableCreate, TimetableUpdate
 from src.timetables.model import TimetableModel
 from src.timetables.dao import TimetableDAO
-from src.exception.TimetableException import TimetableNotFound
+from src.exception.TimetableException import TimetableNotFound, DatatimeOnFormError
 
 class TimetableService:
     @classmethod
@@ -17,6 +17,33 @@ class TimetableService:
         data: TimetableCreate,
         session: AsyncSession
     ) -> Optional[TimetableModel]:
+        if data.from_column >= data.to:
+            raise DatatimeOnFormError
+            
+        if data.from_column.minute != 30 and data.from_column.minute != 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="The minutes of the 'form' field must be a multiple of 30 or equal to 00"
+            )
+        
+        if data.from_column.second != 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="The secjond of the 'form' field must be a multiple of o 0"
+            )
+        
+        if data.to.minute != 30 and data.to.minute != 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="The minutes of the 'to' field must be a multiple of 30 or equal to 0"
+            )
+        
+        if data.to.second != 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="The secjond of the 'to' field must be a multiple of o 0"
+            )
+        
         return await TimetableDAO.add(
             session=session,
             obj_in=TimetableCreate(**data.model_dump())
@@ -30,14 +57,23 @@ class TimetableService:
         data: TimetableUpdate,
         session: AsyncSession
     ) -> Optional[TimetableModel]:
+        if data.from_column >= data.to:
+            raise DatatimeOnFormError
+        
         timetable = await TimetableDAO.update(
             session,
             TimetableModel.id == timetable_id,
-            obj_in=data
+            obj_in=TimetableUpdate(**data.model_dump())
         )
 
         if not timetable:
             raise TimetableNotFound
+        
+        if timetable.appointments:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail='Timetable already has appointments'
+            )
         
         return timetable
     
@@ -86,10 +122,8 @@ class TimetableService:
         to: datetime
     ) -> Optional[list[TimetableModel]]:
         if from_column >= to:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail='The "to" field should be larger than the "from" field'
-            )
+            raise DatatimeOnFormError
+        
         return await TimetableDAO.find_all(
             session,
             and_(
@@ -109,10 +143,8 @@ class TimetableService:
         to: datetime
     ) -> Optional[list[TimetableModel]]:
         if from_column >= to:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail='The "to" field should be larger than the "from" field'
-            )
+            raise DatatimeOnFormError
+        
         return await TimetableDAO.find_all(
             session,
             and_(
