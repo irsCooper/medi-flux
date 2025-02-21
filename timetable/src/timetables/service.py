@@ -1,5 +1,7 @@
+from datetime import datetime
 from typing import Optional
 import uuid
+from fastapi import HTTPException, status
 from sqlalchemy import and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -31,7 +33,7 @@ class TimetableService:
         timetable = await TimetableDAO.update(
             session,
             TimetableModel.id == timetable_id,
-            obj_in=TimetableUpdate(data.model_dump())
+            obj_in=data
         )
 
         if not timetable:
@@ -41,11 +43,106 @@ class TimetableService:
     
 
     @classmethod
-    async def deelete_timetable(
+    async def delete_timetable(
+        cls,
         timetable_id: uuid.UUID,
         session: AsyncSession
     ):
         await TimetableDAO.delete(
             session,
             TimetableModel.id == timetable_id,
+        )
+
+
+    @classmethod
+    async def delete_timetables_for_doctor_id(
+        cls,
+        doctor_id: uuid.UUID,
+        session: AsyncSession
+    ):
+        await TimetableDAO.delete(
+            session,
+            TimetableModel.doctor_id == doctor_id
+        )
+
+    
+    @classmethod
+    async def delete_timetables_for_hospital_id(
+        cls,
+        hospital_id: uuid.UUID,
+        session: AsyncSession
+    ):
+        await TimetableDAO.delete(
+            session,
+            TimetableModel.hospital_id == hospital_id
+        )
+
+    @classmethod
+    async def get_timetables_for_doctor_id(
+        cls,
+        doctor_id: uuid.UUID,
+        session: AsyncSession,
+        from_column: datetime,
+        to: datetime
+    ) -> Optional[list[TimetableModel]]:
+        if from_column >= to:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='The "to" field should be larger than the "from" field'
+            )
+        return await TimetableDAO.find_all(
+            session,
+            and_(
+                TimetableModel.doctor_id == doctor_id,
+                TimetableModel.from_column < to,
+                TimetableModel.to > from_column
+            ),
+        )
+    
+
+    @classmethod
+    async def get_timetables_for_hospital_id(
+        cls,
+        hospital_id: uuid.UUID,
+        session: AsyncSession,
+        from_column: datetime,
+        to: datetime
+    ) -> Optional[list[TimetableModel]]:
+        if from_column >= to:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='The "to" field should be larger than the "from" field'
+            )
+        return await TimetableDAO.find_all(
+            session,
+            and_(
+                TimetableModel.hospital_id == hospital_id,
+                TimetableModel.from_column < to,
+                TimetableModel.to > from_column
+            ),
+        )
+    
+
+    @classmethod
+    async def get_timetables_for_hospital_room(
+        cls,
+        hospital_id: uuid.UUID,
+        room: str,
+        session: AsyncSession,
+        from_column: datetime,
+        to: datetime
+    ) -> Optional[list[TimetableModel]]:
+        if from_column >= to:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail='The "to" field should be larger than the "from" field'
+            )
+        return await TimetableDAO.find_all(
+            session,
+            and_(
+                TimetableModel.hospital_id == hospital_id,
+                TimetableModel.room == room,
+                TimetableModel.from_column < to,
+                TimetableModel.to > from_column
+            ),
         )

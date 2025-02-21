@@ -35,3 +35,6 @@ alembic upgrade head
 
 postgresql://%(DB_USER)s:%(DB_PASS)s@%(DB_HOST)s:%(DB_PORT)s/%(DB_NAME)s
 
+<!-- TODO -->
+в account поменять validate-token, сделать не из роутера а из сервиса
+

@@ -40,7 +40,7 @@ async def delete_timetable(
     id: uuid.UUID,
     session: AsyncSession = Depends(db.session_dependency)
 ):
-    await TimetableService.deelete_timetable(
+    await TimetableService.delete_timetable(
       timetable_id=id,
       session=session  
     )
@@ -51,7 +51,10 @@ async def delete_timetables_for_doctor(
     doctor_id: uuid.UUID,
     session: AsyncSession = Depends(db.session_dependency)
 ):
-    pass
+    await TimetableService.delete_timetables_for_doctor_id(
+        doctor_id=doctor_id,
+        session=session
+    )
 
 
 @router.delete("/Hospital/{id}", status_code=status.HTTP_200_OK)
@@ -59,7 +62,10 @@ async def delete_timetable_for_hoospital(
     hospital_id: uuid.UUID,
     session: AsyncSession = Depends(db.session_dependency)
 ):
-    pass
+    await TimetableService.delete_timetables_for_hospital_id(
+        hospital_id=hospital_id,
+        session=session
+    )
 
 
 @router.get("/Hospital/{id}", response_model=list[TimetableSchema])
@@ -69,7 +75,12 @@ async def get_timetables_for_hospital(
     to: datetime = Query(...),
     session: AsyncSession = Depends(db.session_dependency)
 ):
-    pass
+    return await TimetableService.get_timetables_for_hospital_id(
+        hospital_id=id,
+        session=session,
+        from_column=from_datetime,
+        to=to
+    )
 
 
 @router.get("/Doctor/{id}", response_model=list[TimetableSchema])
@@ -79,7 +90,12 @@ async def get_timetables_for_doctor(
     to: datetime = Query(...),
     session: AsyncSession = Depends(db.session_dependency)
 ):
-    pass
+    return await TimetableService.get_timetables_for_doctor_id(
+        doctor_id=id,
+        session=session,
+        from_column=from_datetime,
+        to=to
+    )
 
 
 @router.get("/Hospital/{id}/Room/{room}", response_model=list[TimetableSchema])
@@ -90,4 +106,10 @@ async def get_timetables_for_doctor(
     to: datetime = Query(...),
     session: AsyncSession = Depends(db.session_dependency)
 ):
-    pass
+    return await TimetableService.get_timetables_for_hospital_room(
+        hospital_id=id,
+        room=room,
+        from_column=from_datetime,
+        to=to,
+        session=session
+    )
