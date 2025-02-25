@@ -77,6 +77,7 @@ async def check_hospital(
             #     correlation_id=message.correlation_id,
             #     routing_key=message.reply_to
             # )
+            # 
 
 
 async def consume_rabbitmq():
