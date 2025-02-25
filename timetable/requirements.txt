@@ -2,7 +2,7 @@ aiohttp==3.9.5
 alembic==1.13.3
 fastapi==0.115.0
 pydantic==2.9.2
-PyJWT==2.3.0
+PyJWT==2.10.1
 SQLAlchemy==2.0.35
 uvicorn==0.31.0
 asyncio==3.4.3
