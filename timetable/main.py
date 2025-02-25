@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.timetables.router import router as router_timetable
 from src.appointments.router import router as router_appointment
-# from src.rabbit_mq.server import consume_rabbitmq
+from src.rabbit_mq.server import consume_rabbitmq
 
 import uvicorn
 import asyncio
@@ -13,11 +13,11 @@ import asyncio
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # task = asyncio.create_task(consume_rabbitmq())
-    # try: 
+    task = asyncio.create_task(consume_rabbitmq())
+    try: 
         yield
-    # finally:
-    #     task.cancel()
+    finally:
+        task.cancel()
 
 
 

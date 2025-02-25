@@ -5,6 +5,8 @@ from src.core.config import settings
 
 ROUTING_KEY_DELETE_TIMETABLE_DOCTOR = 'delete-timetable-doctor'
 ROUTING_KEY_CHECK_TOKEN = 'check_token'
+ROUTING_KEY_CHECK_HOSPITAL = 'check_hospital'
+ROUTING_KEY_CHECK_HOSPITAL_ROOM = 'check_hospital_room'
 
 class RabbitMqBase:
     def __init__(self, rabbit_url=settings.rabbit_mq_url):

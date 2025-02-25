@@ -9,6 +9,7 @@ from src.timetables.schemas import TimetableCreate, TimetableUpdate
 from src.timetables.model import TimetableModel
 from src.timetables.dao import TimetableDAO
 from src.exception.TimetableException import TimetableNotFound, DatatimeOnFormError
+from src.rabbit_mq.hospital import HospitalRabbitHelper
 
 class TimetableService:
     @classmethod
@@ -17,32 +18,34 @@ class TimetableService:
         data: TimetableCreate,
         session: AsyncSession
     ) -> Optional[TimetableModel]:
-        if data.from_column >= data.to:
-            raise DatatimeOnFormError
+        
+        await HospitalRabbitHelper.check_hospital(data.hospital_id)
+        # if data.from_column >= data.to:
+        #     raise DatatimeOnFormError
             
-        if data.from_column.minute != 30 and data.from_column.minute != 0:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="The minutes of the 'form' field must be a multiple of 30 or equal to 00"
-            )
+        # if data.from_column.minute != 30 and data.from_column.minute != 0:
+        #     raise HTTPException(
+        #         status_code=status.HTTP_400_BAD_REQUEST,
+        #         detail="The minutes of the 'form' field must be a multiple of 30 or equal to 00"
+        #     )
         
-        if data.from_column.second != 0:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="The secjond of the 'form' field must be a multiple of o 0"
-            )
+        # if data.from_column.second != 0:
+        #     raise HTTPException(
+        #         status_code=status.HTTP_400_BAD_REQUEST,
+        #         detail="The secjond of the 'form' field must be a multiple of o 0"
+        #     )
         
-        if data.to.minute != 30 and data.to.minute != 0:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="The minutes of the 'to' field must be a multiple of 30 or equal to 0"
-            )
+        # if data.to.minute != 30 and data.to.minute != 0:
+        #     raise HTTPException(
+        #         status_code=status.HTTP_400_BAD_REQUEST,
+        #         detail="The minutes of the 'to' field must be a multiple of 30 or equal to 0"
+        #     )
         
-        if data.to.second != 0:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="The secjond of the 'to' field must be a multiple of o 0"
-            )
+        # if data.to.second != 0:
+        #     raise HTTPException(
+        #         status_code=status.HTTP_400_BAD_REQUEST,
+        #         detail="The secjond of the 'to' field must be a multiple of o 0"
+        #     )
         
         return await TimetableDAO.add(
             session=session,

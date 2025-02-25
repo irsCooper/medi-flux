@@ -92,7 +92,7 @@ class RabbitMqClient(RabbitMqBase):
                 callback_queue, correlation_id, timeout
             )
 
-        await self.close()
+        # await self.close()
         return True if response == b'\x01' else response.decode()
     
     

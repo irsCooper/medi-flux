@@ -20,3 +20,15 @@ async def delete_timetable_doctor(
         # try:
         #     async with db.session_dependency() as sessin:
                 # await 
+
+
+async def consume_rabbitmq():
+    # while True:
+        try:
+            await connect_robust(settings.rabbit_mq_url)
+
+            print('Успешное подключение к RabbitMQ')
+            # break
+        except Exception as e:
+            print(f'Ошибка подключения к RabbitMQ: {e}. Переподключение через 5 секунд...')
+            await asyncio.sleep(5)
