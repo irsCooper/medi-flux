@@ -31,19 +31,19 @@ async def check_hospital_room(
             except HTTPException:
                 response = 'Hospital not found.'.encode()
         if message.reply_to:
-            await rabbit_mq_client.publish_message(
-                channel=channel,
-                body=response,
-                correlation_id=message.correlation_id,
-                routing_key=message.reply_to
-            )
-            # await channel.default_exchange.publish(
-            #     aio_pika.Message(
-            #         body=response,
-            #         correlation_id=message.correlation_id
-            #     ),
+            # await rabbit_mq_client.publish_message(
+            #     channel=channel,
+            #     body=response,
+            #     correlation_id=message.correlation_id,
             #     routing_key=message.reply_to
             # )
+            await channel.default_exchange.publish(
+                Message(
+                    body=response,
+                    correlation_id=message.correlation_id
+                ),
+                routing_key=message.reply_to
+            )
 
 
 async def check_hospital(
@@ -57,8 +57,6 @@ async def check_hospital(
                 room = await HospitalDAO.find_one_or_none(session, HospitalModel.id == hospital_id)
                 if room:
                     response = b'\x01'
-                # else:
-                #     response = b'\x00'
             
         except:
             response = b'\x00'
@@ -82,8 +80,6 @@ async def check_hospital(
 async def consume_rabbitmq():
     while True:
         try:
-            # connection = await aio_pika.connect_robust(f'amqp://{settings.RABBITMQ_USER}:{settings.RABBITMQ_PASSWORD}@{settings.RABBITMQ_HOST}/')
-            # channel = await connection.channel()
             await rabbit_mq_client.connect()
             channel: RobustChannel = await rabbit_mq_client.create_channel()
 
