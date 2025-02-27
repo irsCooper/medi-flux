@@ -5,30 +5,39 @@ from fastapi import HTTPException, status
 from sqlalchemy import and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.appointments.dao import AppointmentModel, AppointmentDAO, AppointmentCreate
 from src.timetables.schemas import TimetableCreate, TimetableUpdate
 from src.timetables.model import TimetableModel
 from src.timetables.dao import TimetableDAO
 from src.exception.TimetableException import TimetableNotFound, DatatimeOnFormError
 from src.rabbit_mq.hospital import HospitalRabbitHelper
+from src.rabbit_mq.account import AccountRabbitHelper
 
 class TimetableService:
     @classmethod
-    async def validate_time(self, data: TimetableCreate | TimetableUpdate):
-        if data.from_column >= data.to:
-            raise DatatimeOnFormError
+    async def validate_time(self, from_column: datetime, to: datetime):
+        if from_column >= to:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="The 'from_column' must be less than 'to'"
+            )
 
-        for field in ["from_column", "to"]:
-            time_value: datetime = getattr(data, field)
+        def validate_time_field(time_value: datetime, field_name: str):
             if time_value.minute not in {0, 30}:
                 raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"The minutes of the '{field}' field must be 0 or 30"
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"The minutes of the '{field_name}' field must be 0 or 30"
                 )
+            
             if time_value.second != 0:
                 raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"The seconds of the '{field}' field must be 0"
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail=f"The seconds of the '{field_name}' field must be 0"
                 )
+
+        validate_time_field(from_column, 'from_column')
+        validate_time_field(to, 'to')
+
 
     @classmethod
     async def create_timetable(
@@ -36,10 +45,10 @@ class TimetableService:
         data: TimetableCreate,
         session: AsyncSession
     ) -> Optional[TimetableModel]:
+        await self.validate_time(data.from_column, data.to)
         
         await HospitalRabbitHelper.check_hospital(data.hospital_id)
-        
-        await self.validate_time(data)
+        await AccountRabbitHelper.check_doctor(data.doctor_id)
         
         return await TimetableDAO.add(
             session=session,
@@ -54,8 +63,10 @@ class TimetableService:
         data: TimetableUpdate,
         session: AsyncSession
     ) -> Optional[TimetableModel]:
-        if data.from_column >= data.to:
-            raise DatatimeOnFormError
+        await self.validate_time(data.from_column, data.to)
+        
+        await HospitalRabbitHelper.check_hospital(data.hospital_id)
+        await AccountRabbitHelper.check_doctor(data.doctor_id)
         
         timetable = await TimetableDAO.update(
             session,
@@ -93,6 +104,8 @@ class TimetableService:
         doctor_id: uuid.UUID,
         session: AsyncSession
     ):
+        await AccountRabbitHelper.check_doctor(doctor_id)
+
         await TimetableDAO.delete(
             session,
             TimetableModel.doctor_id == doctor_id
@@ -105,6 +118,8 @@ class TimetableService:
         hospital_id: uuid.UUID,
         session: AsyncSession
     ):
+        await HospitalRabbitHelper.check_hospital(hospital_id)
+
         await TimetableDAO.delete(
             session,
             TimetableModel.hospital_id == hospital_id
@@ -118,8 +133,9 @@ class TimetableService:
         from_column: datetime,
         to: datetime
     ) -> Optional[list[TimetableModel]]:
-        if from_column >= to:
-            raise DatatimeOnFormError
+        await self.validate_time(from_column, to)
+        
+        await AccountRabbitHelper.check_doctor(doctor_id)
         
         return await TimetableDAO.find_all(
             session,
@@ -133,14 +149,15 @@ class TimetableService:
 
     @classmethod
     async def get_timetables_for_hospital_id(
-        cls,
+        self,
         hospital_id: uuid.UUID,
         session: AsyncSession,
         from_column: datetime,
         to: datetime
     ) -> Optional[list[TimetableModel]]:
-        if from_column >= to:
-            raise DatatimeOnFormError
+        await self.validate_time(from_column, to)
+
+        await HospitalRabbitHelper.check_hospital(hospital_id)
         
         return await TimetableDAO.find_all(
             session,
@@ -154,18 +171,17 @@ class TimetableService:
 
     @classmethod
     async def get_timetables_for_hospital_room(
-        cls,
+        self,
         hospital_id: uuid.UUID,
         room: str,
         session: AsyncSession,
         from_column: datetime,
         to: datetime
     ) -> Optional[list[TimetableModel]]:
-        if from_column >= to:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail='The "to" field should be larger than the "from" field'
-            )
+        await self.validate_time(from_column, to)
+        
+        await HospitalRabbitHelper.check_hospital_room(hospital_id, room)
+
         return await TimetableDAO.find_all(
             session,
             and_(
@@ -174,4 +190,67 @@ class TimetableService:
                 TimetableModel.from_column < to,
                 TimetableModel.to > from_column
             ),
+        )
+    
+
+    @classmethod
+    async def get_free_appointsment_by_timetable_id(
+        self,
+        timetable_id: uuid.UUID,
+        session: AsyncSession
+    ):
+        timetable: TimetableModel = await TimetableDAO.find_one_or_none(
+            session,
+            TimetableModel.id == timetable_id
+        )
+
+        if not timetable:
+            raise TimetableNotFound
+        
+        available_slots = []
+        current_time = timetable.from_column
+
+        while current_time < timetable.to:
+            available_slots.append(current_time)
+            current_time += timedelta(minutes=30)
+
+        occupied_slots_set = set(slot.time for slot in timetable.appointments)
+
+        print(occupied_slots_set)
+
+        free_slots = [slot for slot in available_slots if slot not in occupied_slots_set]
+
+        return {"available_slots": free_slots}
+    
+
+    @classmethod
+    async def create_appointsment_by_timetable_id(
+        self,
+        timetable_id: uuid.UUID,
+        user_id: uuid.UUID,
+        time: datetime,
+        session: AsyncSession
+    ):
+        timetable: TimetableModel = await TimetableDAO.find_one_or_none(
+            session, TimetableModel.id == timetable_id
+        )
+
+        if not timetable: 
+            raise TimetableNotFound
+        
+        if timetable.appointments:
+            occupied_slots_set = set(slot.time for slot in timetable.appointments)
+            if time in occupied_slots_set:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=f'appointment for this time {time} already exists'
+                )
+
+        return await AppointmentDAO.add(
+            session=session, 
+            obj_in=AppointmentCreate(
+                timetable_id=timetable_id,
+                user_id=user_id,
+                time=time
+            )
         )

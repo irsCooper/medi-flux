@@ -6,6 +6,7 @@ from datetime import datetime
 from src.core.db_helper import db
 from src.timetables.schemas import TimetableCreate, TimetableSchema, TimetableUpdate
 from src.timetables.service import TimetableService
+from src.rabbit_mq.account import AccountRabbitHelper
 
 router = APIRouter(
     prefix='/Timetable',
@@ -15,7 +16,8 @@ router = APIRouter(
 @router.post("", status_code=status.HTTP_201_CREATED, response_model=TimetableSchema)
 async def create_timetable(
     create_timetable: TimetableCreate,
-    session: AsyncSession = Depends(db.session_dependency)
+    session: AsyncSession = Depends(db.session_dependency),
+    valid_token: str = Depends(AccountRabbitHelper.validate_token)
 ):
     return await TimetableService.create_timetable(
         data=create_timetable,
@@ -111,5 +113,27 @@ async def get_timetables_for_doctor(
         room=room,
         from_column=from_datetime,
         to=to,
+        session=session
+    )
+
+
+@router.get("/{id}/Appointments")
+async def get_free_appointsment_by_timetable_id(
+    id: uuid.UUID,
+    session: AsyncSession = Depends(db.session_dependency)
+):
+    return await TimetableService.get_free_appointsment_by_timetable_id(id, session)
+
+
+@router.post("/{id}/Appointments")
+async def create_appointsment_by_timetable_id(
+    id: uuid.UUID,
+    time: datetime,
+    session: AsyncSession = Depends(db.session_dependency)
+):
+    return await TimetableService.create_appointsment_by_timetable_id(
+        timetable_id=id,
+        user_id=uuid.uuid4(),
+        time=time,
         session=session
     )
