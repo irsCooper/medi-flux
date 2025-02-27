@@ -15,28 +15,26 @@ from src.rabbit_mq.account import AccountRabbitHelper
 
 class TimetableService:
     @classmethod
-    async def validate_time(self, from_column: datetime, to: datetime):
-        if from_column >= to:
+    async def validate_time(self, time_value: datetime, field_name: str, to: datetime = None):
+        if to:
+            if time_value >= to:
+                raise HTTPException(
+                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                    detail="The 'from_column' must be less than 'to'"
+                )
+
+        if time_value.minute not in {0, 30}:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="The 'from_column' must be less than 'to'"
+                detail=f"The minutes of the '{field_name}' field must be 0 or 30"
+            )
+        
+        if time_value.second != 0:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"The seconds of the '{field_name}' field must be 0"
             )
 
-        def validate_time_field(time_value: datetime, field_name: str):
-            if time_value.minute not in {0, 30}:
-                raise HTTPException(
-                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                    detail=f"The minutes of the '{field_name}' field must be 0 or 30"
-                )
-            
-            if time_value.second != 0:
-                raise HTTPException(
-                    status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                    detail=f"The seconds of the '{field_name}' field must be 0"
-                )
-
-        validate_time_field(from_column, 'from_column')
-        validate_time_field(to, 'to')
 
 
     @classmethod
@@ -45,7 +43,8 @@ class TimetableService:
         data: TimetableCreate,
         session: AsyncSession
     ) -> Optional[TimetableModel]:
-        await self.validate_time(data.from_column, data.to)
+        await self.validate_time(data.from_column, 'from', data.to)
+        await self.validate_time(data.to, 'to')
         
         await HospitalRabbitHelper.check_hospital(data.hospital_id)
         await AccountRabbitHelper.check_doctor(data.doctor_id)
@@ -63,7 +62,8 @@ class TimetableService:
         data: TimetableUpdate,
         session: AsyncSession
     ) -> Optional[TimetableModel]:
-        await self.validate_time(data.from_column, data.to)
+        await self.validate_time(data.from_column, 'from', data.to)
+        await self.validate_time(data.to, 'to')
         
         await HospitalRabbitHelper.check_hospital(data.hospital_id)
         await AccountRabbitHelper.check_doctor(data.doctor_id)
@@ -133,7 +133,8 @@ class TimetableService:
         from_column: datetime,
         to: datetime
     ) -> Optional[list[TimetableModel]]:
-        await self.validate_time(from_column, to)
+        await self.validate_time(from_column, 'from', to)
+        await self.validate_time(to, 'to')
         
         await AccountRabbitHelper.check_doctor(doctor_id)
         
@@ -155,7 +156,8 @@ class TimetableService:
         from_column: datetime,
         to: datetime
     ) -> Optional[list[TimetableModel]]:
-        await self.validate_time(from_column, to)
+        await self.validate_time(from_column, 'from', to)
+        await self.validate_time(to, 'to')
 
         await HospitalRabbitHelper.check_hospital(hospital_id)
         
@@ -178,7 +180,8 @@ class TimetableService:
         from_column: datetime,
         to: datetime
     ) -> Optional[list[TimetableModel]]:
-        await self.validate_time(from_column, to)
+        await self.validate_time(from_column, 'from', to)
+        await self.validate_time(to, 'to')
         
         await HospitalRabbitHelper.check_hospital_room(hospital_id, room)
 
@@ -216,8 +219,6 @@ class TimetableService:
 
         occupied_slots_set = set(slot.time for slot in timetable.appointments)
 
-        print(occupied_slots_set)
-
         free_slots = [slot for slot in available_slots if slot not in occupied_slots_set]
 
         return {"available_slots": free_slots}
@@ -237,6 +238,8 @@ class TimetableService:
 
         if not timetable: 
             raise TimetableNotFound
+        
+        await self.validate_time(time, 'time')
         
         if timetable.appointments:
             occupied_slots_set = set(slot.time for slot in timetable.appointments)
