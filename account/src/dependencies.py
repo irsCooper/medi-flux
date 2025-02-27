@@ -141,11 +141,10 @@ async def get_current_role(
     name_role: str,
     user: UserModel
 ): 
-    if name_role not in user.roles:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Not enough privileges"
-        )
+    for i in range(len(user.roles)):
+            for j in range(len(name_role)):
+                if user.roles[i] == name_role[j]:
+                    return
 
 async def delete_timetable_doctor(doctor_id: uuid.UUID):
     await rabbit_mq_client.call(

@@ -41,7 +41,7 @@ async def get_list_users_only_admin(
     user: UserModel = Depends(get_current_auth_access),
     session: AsyncSession = Depends(db.session_dependency)
 ):
-    await get_current_role(ROLE_ADMIN, user)
+    await get_current_role([ROLE_ADMIN], user)
     return await UserService.get_list_users(
         session=session,
         offset=offset, 
@@ -55,7 +55,7 @@ async def create_user_only_admin(
     user: UserModel = Depends(get_current_auth_access),
     session: AsyncSession = Depends(db.session_dependency)
 ):
-    await get_current_role(ROLE_ADMIN, user)
+    await get_current_role([ROLE_ADMIN], user)
     await UserService.create_user(
         user_in=user_create,
         session=session,
@@ -73,7 +73,7 @@ async def update_user_info_only_admin(
     user: UserModel = Depends(get_current_auth_access),
     session: AsyncSession = Depends(db.session_dependency)
 ):
-    await get_current_role(ROLE_ADMIN, user)
+    await get_current_role([ROLE_ADMIN], user)
     return await UserService.update_user(user_id=id, user=user_update, session=session)
 
 
@@ -84,5 +84,5 @@ async def delete_user_only_admin(
     user: UserModel = Depends(get_current_auth_access),
     session: AsyncSession = Depends(db.session_dependency)
 ):
-    await get_current_role(ROLE_ADMIN, user)
+    await get_current_role([ROLE_ADMIN], user)
     await UserService.delete_user(user_id=id, session=session)
