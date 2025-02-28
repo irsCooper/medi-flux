@@ -9,7 +9,7 @@ from src.rabbit_mq.account import AccountRabbitHelper
 class AppointmentsService:
     @classmethod
     async def delete_appoointment(
-        self,
+        cls,
         appointment_id: uuid.UUID,
         session: AsyncSession
     ):
@@ -20,7 +20,7 @@ class AppointmentsService:
 
     @classmethod
     async def check_role_or_exists_appointment(
-        self,
+        cls,
         roles: list,
         token: str,
         appointnment_id: uuid.UUID,

@@ -15,7 +15,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl='http://0.0.0.0:8081/Authenticatio
 
 class AccountRabbitHelper:
     @classmethod
-    async def validate_token(self, token: str = Depends(oauth2_scheme)):
+    async def validate_token(cls, token: str = Depends(oauth2_scheme)):
         correlation_id = str(uuid.uuid4())
 
         await rabbit_mq_client.connect()
@@ -41,7 +41,7 @@ class AccountRabbitHelper:
 
     @classmethod
     async def decoded_token(
-        self, 
+        cls, 
         token: str,
         public_key: str = settings.auth_jwt.public_key_path.read_text(),
         algorithms: str = settings.auth_jwt.algorithms
@@ -54,11 +54,11 @@ class AccountRabbitHelper:
     
     @classmethod
     async def get_current_role(
-        self,
+        cls,
         roles: list,
         token: str
     ):
-        decoded: dict = self.validate_token(token)
+        decoded: dict = cls.validate_token(token)
 
         current_roles = decoded.get('roles')
 
@@ -74,7 +74,7 @@ class AccountRabbitHelper:
     
 
     @classmethod
-    async def check_doctor(self, doctor_id: uuid.UUID):
+    async def check_doctor(cls, doctor_id: uuid.UUID):
         correlation_id = str(uuid.uuid4())
 
         await rabbit_mq_client.connect()
