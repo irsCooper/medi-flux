@@ -38,19 +38,27 @@ class AccountRabbitHelper:
             detail=response
         )
     
+
     @classmethod
-    async def get_current_role(
-        self,
-        roles: list,
+    async def decoded_token(
+        self, 
         token: str,
         public_key: str = settings.auth_jwt.public_key_path.read_text(),
         algorithms: str = settings.auth_jwt.algorithms
-    ):
-        decoded: dict = decode(
+    ) -> dict:
+        return decode(
             jwt=token,
             key=public_key,
             algorithms=algorithms
         )
+    
+    @classmethod
+    async def get_current_role(
+        self,
+        roles: list,
+        token: str
+    ):
+        decoded: dict = self.validate_token(token)
 
         current_roles = decoded.get('roles')
 
