@@ -39,7 +39,7 @@ class HospitalRabbitHelper:
         callback_queue = await rabbit_mq_client.create_queue(channel)
 
         data = json.dumps({
-            'hospital_id': hospital_id,
+            'hospital_id': str(hospital_id),
             'room': room
         }, ensure_ascii=False)
 
