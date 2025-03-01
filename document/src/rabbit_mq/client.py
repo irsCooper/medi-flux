@@ -1,4 +1,5 @@
 import asyncio
+import uuid
 from aio_pika.abc import AbstractIncomingMessage, AbstractChannel, AbstractQueue
 from aio_pika import Message
 
@@ -67,16 +68,48 @@ class RabbitMqClient(RabbitMqBase):
         return response
     
 
+    async def create_queue(self, channel: AbstractChannel):
+        callback_queue = await channel.declare_queue(auto_delete=True)
+        return callback_queue
+    
+
+    # async def call_and_wait_for_response(
+    #     self,
+    #     body: str,
+    #     routing_key: str,
+    #     channel: AbstractChannel,
+    #     callback_queue: AbstractQueue,
+    #     correlation_id: str,
+    #     timeout: float = 5.0
+    # ):
+    #     await self.connect()
+    #     async with self.connection:
+    #         await self.publish_message(
+    #             channel=channel,
+    #             body=body.encode(),
+    #             routing_key=routing_key,
+    #             correlation_id=correlation_id,
+    #             reply_to=callback_queue.name
+    #         )
+
+    #         response = await self.wait_for_response(
+    #             callback_queue, correlation_id, timeout
+    #         )
+
+    #     return True if response == b'\x01' else response.decode()
+    
     async def call_and_wait_for_response(
         self,
         body: str,
         routing_key: str,
-        channel: AbstractChannel,
-        callback_queue: AbstractQueue,
-        correlation_id: str,
         timeout: float = 5.0
     ):
-        await self.connect()
+        correlation_id = str(uuid.uuid4())
+
+        await rabbit_mq_client.connect()
+        channel = await rabbit_mq_client.create_channel()
+        callback_queue = await rabbit_mq_client.create_queue(channel)
+
         async with self.connection:
             await self.publish_message(
                 channel=channel,
@@ -93,8 +126,5 @@ class RabbitMqClient(RabbitMqBase):
         return True if response == b'\x01' else response.decode()
     
     
-    async def create_queue(self, channel: AbstractChannel):
-        callback_queue = await channel.declare_queue(auto_delete=True)
-        return callback_queue
 
 rabbit_mq_client = RabbitMqClient()

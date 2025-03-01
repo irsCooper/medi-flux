@@ -1,8 +1,5 @@
 import asyncio
-
 from aio_pika import connect_robust
-
-from src.core.db_helper import db
 from src.core.config import settings
 
 

@@ -1,5 +1,5 @@
 __all__ = (
     "HistoryModel"
 )
-from src.documents.model import HistoryModel
+from src.history.model import HistoryModel
 
