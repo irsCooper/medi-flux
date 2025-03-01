@@ -143,7 +143,7 @@ async def get_current_role(
 ): 
     for i in range(len(user.roles)):
             for j in range(len(name_role)):
-                if user.roles[i] == name_role[j]:
+                if user.roles[i].name_role == name_role[j]:
                     return
                 
     raise HTTPException(
