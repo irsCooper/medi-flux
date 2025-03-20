@@ -20,7 +20,7 @@ async def check_hospital_room(
         body: dict = json.loads(message.body.decode())
         hospital_id = body.get('hospital_id')
         query_room = body.get('room')
-        async with db.session_dependency() as session:
+        async with db.session_factory() as session:
             try:
                 rooms = await HospitalDAO.get_rooms(session, HospitalModel.id == hospital_id)
                 room = next((room.name for room in rooms if room.name == query_room), None)

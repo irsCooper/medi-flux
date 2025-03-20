@@ -15,7 +15,7 @@ from src.rabbit_mq.account import AccountRabbitHelper
 
 class TimetableService:
     @classmethod
-    async def validate_time(self, time_value: datetime, field_name: str, to: datetime = None):
+    async def validate_time(cls, time_value: datetime, field_name: str, to: datetime = None):
         if to:
             if time_value >= to:
                 raise HTTPException(
@@ -39,12 +39,12 @@ class TimetableService:
 
     @classmethod
     async def create_timetable(
-        self,
+        cls,
         data: TimetableCreate,
         session: AsyncSession
     ) -> Optional[TimetableModel]:
-        await self.validate_time(data.from_column, 'from', data.to)
-        await self.validate_time(data.to, 'to')
+        await cls.validate_time(data.from_column, 'from', data.to)
+        await cls.validate_time(data.to, 'to')
         
         await HospitalRabbitHelper.check_hospital(data.hospital_id)
         await AccountRabbitHelper.check_doctor(data.doctor_id)
@@ -57,13 +57,13 @@ class TimetableService:
 
     @classmethod
     async def update_timetable(
-        self,
+        cls,
         timetable_id: uuid.UUID,
         data: TimetableUpdate,
         session: AsyncSession
     ) -> Optional[TimetableModel]:
-        await self.validate_time(data.from_column, 'from', data.to)
-        await self.validate_time(data.to, 'to')
+        await cls.validate_time(data.from_column, 'from', data.to)
+        await cls.validate_time(data.to, 'to')
         
         await HospitalRabbitHelper.check_hospital(data.hospital_id)
         await AccountRabbitHelper.check_doctor(data.doctor_id)
@@ -88,7 +88,7 @@ class TimetableService:
 
     @classmethod
     async def delete_timetable(
-        self,
+        cls,
         timetable_id: uuid.UUID,
         session: AsyncSession
     ):
@@ -100,7 +100,7 @@ class TimetableService:
 
     @classmethod
     async def delete_timetables_for_doctor_id(
-        self,
+        cls,
         doctor_id: uuid.UUID,
         session: AsyncSession
     ):
@@ -114,7 +114,7 @@ class TimetableService:
     
     @classmethod
     async def delete_timetables_for_hospital_id(
-        self,
+        cls,
         hospital_id: uuid.UUID,
         session: AsyncSession
     ):
@@ -127,14 +127,14 @@ class TimetableService:
 
     @classmethod
     async def get_timetables_for_doctor_id(
-        self,
+        cls,
         doctor_id: uuid.UUID,
         session: AsyncSession,
         from_column: datetime,
         to: datetime
     ) -> Optional[list[TimetableModel]]:
-        await self.validate_time(from_column, 'from', to)
-        await self.validate_time(to, 'to')
+        await cls.validate_time(from_column, 'from', to)
+        await cls.validate_time(to, 'to')
         
         await AccountRabbitHelper.check_doctor(doctor_id)
         
@@ -150,14 +150,14 @@ class TimetableService:
 
     @classmethod
     async def get_timetables_for_hospital_id(
-        self,
+        cls,
         hospital_id: uuid.UUID,
         session: AsyncSession,
         from_column: datetime,
         to: datetime
     ) -> Optional[list[TimetableModel]]:
-        await self.validate_time(from_column, 'from', to)
-        await self.validate_time(to, 'to')
+        await cls.validate_time(from_column, 'from', to)
+        await cls.validate_time(to, 'to')
 
         await HospitalRabbitHelper.check_hospital(hospital_id)
         
@@ -173,15 +173,15 @@ class TimetableService:
 
     @classmethod
     async def get_timetables_for_hospital_room(
-        self,
+        cls,
         hospital_id: uuid.UUID,
         room: str,
         session: AsyncSession,
         from_column: datetime,
         to: datetime
     ) -> Optional[list[TimetableModel]]:
-        await self.validate_time(from_column, 'from', to)
-        await self.validate_time(to, 'to')
+        await cls.validate_time(from_column, 'from', to)
+        await cls.validate_time(to, 'to')
         
         await HospitalRabbitHelper.check_hospital_room(hospital_id, room)
 
@@ -198,7 +198,7 @@ class TimetableService:
 
     @classmethod
     async def get_free_appointsment_by_timetable_id(
-        self,
+        cls,
         timetable_id: uuid.UUID,
         session: AsyncSession
     ):
@@ -226,7 +226,7 @@ class TimetableService:
 
     @classmethod
     async def create_appointsment_by_timetable_id(
-        self,
+        cls,
         timetable_id: uuid.UUID,
         user_id: uuid.UUID,
         time: datetime,
@@ -239,7 +239,7 @@ class TimetableService:
         if not timetable: 
             raise TimetableNotFound
         
-        await self.validate_time(time, 'time')
+        await cls.validate_time(time, 'time')
         
         if timetable.appointments:
             occupied_slots_set = set(slot.time for slot in timetable.appointments)

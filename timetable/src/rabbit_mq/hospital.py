@@ -9,7 +9,7 @@ from src.rabbit_mq.client import rabbit_mq_client
 
 class HospitalRabbitHelper:
     @classmethod
-    async def check_hospital(self, hospital_id: uuid.UUID):
+    async def check_hospital(cls, hospital_id: uuid.UUID):
         correlation_id = str(uuid.uuid4())
 
         await rabbit_mq_client.connect()
@@ -31,7 +31,7 @@ class HospitalRabbitHelper:
             )
         
     @classmethod
-    async def check_hospital_room(self, hospital_id: uuid.UUID, room: str):
+    async def check_hospital_room(cls, hospital_id: uuid.UUID, room: str):
         correlation_id = str(uuid.uuid4())
 
         await rabbit_mq_client.connect()
@@ -39,7 +39,7 @@ class HospitalRabbitHelper:
         callback_queue = await rabbit_mq_client.create_queue(channel)
 
         data = json.dumps({
-            'hospital_id': hospital_id,
+            'hospital_id': str(hospital_id),
             'room': room
         }, ensure_ascii=False)
 
