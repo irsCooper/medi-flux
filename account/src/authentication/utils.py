@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 import uuid
 import bcrypt
 from fastapi.security import HTTPBearer, OAuth2PasswordBearer

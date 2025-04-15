@@ -8,8 +8,6 @@ from src.core.config import settings
 import uuid
 from jwt import decode
 
-# oauth2_scheme = OAuth2PasswordBearer(tokenUrl='http://192.168.0.32:8081/Authentication/SignIn')
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='http://0.0.0.0:8081/Authentication/SignIn')
 
 async def validate_token(token: str = Depends(oauth2_scheme)):
@@ -48,12 +46,8 @@ async def get_current_role(
         algorithms=algorithms
     )
 
-    current_roles = decoded.get('roles')
-    
-    for i in  range(len(current_roles)):
-        for j in range(len(roles)):
-            if current_roles[i] == roles[j]:
-                return
+    if any(role in roles for role in decoded.get('roles', [])):
+        return
             
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,

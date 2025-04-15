@@ -1,14 +1,12 @@
-
 from typing import Any, Dict, Optional, Union
 
-from fastapi import HTTPException, status
 from sqlalchemy import insert, select, update
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import SQLAlchemyError, IntegrityError
 
 from src.exceptions.DatabaseException import ConflictUnicueAttribute, RolesException, UnknowanDatabaseException, DatabaseException
-from src.accounts.schemas import ROLE_ADMIN, ROLE_DOCTOR, ROLE_MANAGER, UserCreateDB, UserUpdateDB, ROLE_USER
+from src.accounts.schemas import UserCreateDB, UserUpdateDB, ROLE_USER
 from src.accounts.model import RoleModel, UserModel
 from src.base_dao import BaseDAO
 

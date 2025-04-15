@@ -5,12 +5,12 @@ import uuid
 from fastapi import HTTPException, status
 from sqlalchemy import and_ 
 
-from src.accounts.schemas import ROLE_ADMIN, ROLE_DOCTOR, ROLE_USER, UserUpdate, UserUpdateAdmin, UserUpdateDB
+from src.accounts.schemas import ROLE_DOCTOR, UserUpdate, UserUpdateAdmin, UserUpdateDB
 from src.accounts.model import  UserModel
 from src.authentication.utils import hash_password
 from src.accounts.dao import UserDAO
 from src.accounts.schemas import UserCreate, UserCreateAdmin, UserCreateDB
-from src.dependencies import delete_timetable_doctor, get_current_role
+from src.dependencies import delete_timetable_doctor
 
 from sqlalchemy.ext.asyncio import AsyncSession
 

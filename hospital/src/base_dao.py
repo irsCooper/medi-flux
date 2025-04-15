@@ -1,5 +1,4 @@
 from typing import Any, Dict, Generic, Optional, TypeVar, Union
-from unittest import result
 
 from pydantic import BaseModel
 from sqlalchemy import delete, func, insert, select, update

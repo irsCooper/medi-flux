@@ -5,11 +5,11 @@ from fastapi import HTTPException, status
 from sqlalchemy import and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.appointments.dao import AppointmentModel, AppointmentDAO, AppointmentCreate
+from src.appointments.dao import AppointmentDAO, AppointmentCreate
 from src.timetables.schemas import TimetableCreate, TimetableUpdate
 from src.timetables.model import TimetableModel
 from src.timetables.dao import TimetableDAO
-from src.exception.TimetableException import TimetableNotFound, DatatimeOnFormError
+from src.exception.TimetableException import TimetableNotFound
 from src.rabbit_mq.hospital import HospitalRabbitHelper
 from src.rabbit_mq.account import AccountRabbitHelper
 

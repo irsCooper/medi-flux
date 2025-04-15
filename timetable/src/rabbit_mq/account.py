@@ -8,8 +8,6 @@ from src.rabbit_mq.client import rabbit_mq_client
 from src.core.config import settings
 
 
-# oauth2_scheme = OAuth2PasswordBearer(tokenUrl='http://192.168.0.32:8081/Authentication/SignIn')
-
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl='http://0.0.0.0:8081/Authentication/SignIn')
 
 
@@ -60,12 +58,8 @@ class AccountRabbitHelper:
     ):
         decoded: dict = cls.validate_token(token)
 
-        current_roles = decoded.get('roles')
-
-        for i in range(len(current_roles)):
-            for j in range(len(roles)):
-                if current_roles[i] == roles[j]:
-                    return
+        if any(role in roles for role in decoded.get('roles', [])):
+            return
         
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

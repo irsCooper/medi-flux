@@ -76,6 +76,21 @@ services:
     networks:
       - work
 
+  document_service:
+    build:
+      context: ./document/
+    container_name: document_service
+    ports:
+      - "8084:8084"
+    depends_on:
+      - postgres
+      - rabbitmq
+      # - redis
+    env_file:
+      - ./document/.env
+    networks:
+      - work
+
 
 networks:
   work:

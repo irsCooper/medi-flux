@@ -1,8 +1,12 @@
+from typing import TYPE_CHECKING
 import uuid
 from sqlalchemy import UUID, ForeignKey, Integer, String, Boolean
 from sqlalchemy.orm import relationship, Mapped, mapped_column
 
-from ..base_model import BaseModel
+from src.base_model import BaseModel
+
+if TYPE_CHECKING:
+    from src.authentication.model import RefreshModel
 
 
 class UserRolesModel(BaseModel):

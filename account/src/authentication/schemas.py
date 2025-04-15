@@ -8,7 +8,6 @@ class RefreshCreate(BaseModel):
     user_id: uuid.UUID
     reftesh_token_id: uuid.UUID
     reftesh_token: str 
-    # access_token: str 
     expire_in: int 
 
 

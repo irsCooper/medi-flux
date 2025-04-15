@@ -3,7 +3,7 @@ import uuid
 
 from fastapi import HTTPException, status
 
-from src.rabbit_mq.base import ROUTING_KEY_CHECK_HOSPITAL, ROUTING_KEY_CHECK_HOSPITAL_ROOM
+from src.rabbit_mq.base import ROUTING_KEY_CHECK_HOSPITAL_ROOM
 from src.rabbit_mq.client import rabbit_mq_client
 
 

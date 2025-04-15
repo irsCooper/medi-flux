@@ -7,7 +7,7 @@ from src.accounts.model import UserModel
 from src.accounts.service import UserService
 from src.accounts.schemas import ROLE_ADMIN, UserCreateAdmin, UserDB, UserUpdate, UserView
 from src.core.db_helper import db
-from src.dependencies import get_current_role, http_bearer, get_current_auth_access, get_current_auth_refresh
+from src.dependencies import get_current_role, http_bearer, get_current_auth_access
 
 
 router = APIRouter(

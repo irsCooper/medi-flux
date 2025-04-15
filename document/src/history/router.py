@@ -2,13 +2,10 @@ import uuid
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-# from src.documents.service import AppointmentsService
 from src.rabbit_mq.account import AccountRabbitHelper
 from src.history.service import HistoryService
 from src.core.db_helper import db
-from src.core.config import ROLE_ADMIN, ROLE_DOCTOR, ROLE_MANAGER
 from src.history.schemas import HistoryCreate, HistoryUpdate
-# from src.rabbit_mq.account import AccountRabbitHelper
 
 router = APIRouter(
     prefix='/History',

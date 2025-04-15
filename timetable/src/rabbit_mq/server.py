@@ -11,6 +11,7 @@ from src.core.db_helper import db
 from src.core.config import settings
 
 
+# TODO
 async def delete_timetable_doctor(
     message: AbstractIncomingMessage,
     channel: RobustChannel
@@ -23,12 +24,10 @@ async def delete_timetable_doctor(
 
 
 async def consume_rabbitmq():
-    # while True:
         try:
             await connect_robust(settings.rabbit_mq_url)
 
             print('Успешное подключение к RabbitMQ')
-            # break
         except Exception as e:
             print(f'Ошибка подключения к RabbitMQ: {e}. Переподключение через 5 секунд...')
             await asyncio.sleep(5)

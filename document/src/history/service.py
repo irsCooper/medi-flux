@@ -4,7 +4,7 @@ import uuid
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.config import ROLE_ADMIN, ROLE_DOCTOR
+from src.core.config import ROLE_DOCTOR
 from src.rabbit_mq.hospital import HospitalRabbitHelper
 from src.rabbit_mq.account import AccountRabbitHelper
 from src.history.dao import HistoryDAO

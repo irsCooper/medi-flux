@@ -141,10 +141,8 @@ async def get_current_role(
     name_role: str,
     user: UserModel
 ): 
-    for i in range(len(user.roles)):
-            for j in range(len(name_role)):
-                if user.roles[i].name_role == name_role[j]:
-                    return
+    if any(role.name_role in name_role for role in user.roles):
+        return
                 
     raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,

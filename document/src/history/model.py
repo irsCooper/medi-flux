@@ -2,7 +2,7 @@ from datetime import datetime
 import uuid
 
 from sqlalchemy import TIMESTAMP, UUID, String
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 from src.base_model import BaseModel
 
