@@ -86,7 +86,6 @@ async def check_token(
 
 
 async def consume_rabbitmq():
-    # while True:
         try:
             connection = await connect_robust(settings.rabbit_mq_url)
             channel = await connection.channel()
@@ -110,7 +109,6 @@ async def consume_rabbitmq():
             await user_queue.consume(partial(check_pacient, channel=channel))
 
             print('Успешное подключение к RabbitMQ')
-            # break
         except Exception as e:
             print(f'Ошибка подключения к RabbitMQ: {e}. Переподключение через 5 секунд...')
             await asyncio.sleep(5)

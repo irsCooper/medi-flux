@@ -8,7 +8,7 @@ from src.core.config import settings
 import uuid
 from jwt import decode
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='http://0.0.0.0:8081/Authentication/SignIn')
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='http://localhost:8081/Authentication/SignIn')
 
 async def validate_token(token: str = Depends(oauth2_scheme)):
     correlation_id = str(uuid.uuid4())
@@ -24,6 +24,8 @@ async def validate_token(token: str = Depends(oauth2_scheme)):
         correlation_id=correlation_id,
         callback_queue=callback_queue
     )
+
+    print(response)
     
     if response is True:
         return token

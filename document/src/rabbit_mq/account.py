@@ -8,7 +8,7 @@ from src.rabbit_mq.client import rabbit_mq_client
 from src.core.config import settings
 
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl='http://0.0.0.0:8081/Authentication/SignIn')
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='http://localhost:8081/Authentication/SignIn')
 
 
 class AccountRabbitHelper:
