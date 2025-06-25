@@ -13,7 +13,7 @@ Medi-Flux  — это модульная микросервисная платф
 ## Стек технологий
 - Python, FastAPI
 - SQLAlchemy, PostgreSQL
-- RabbitMQ для событийной шины
+- RabbitMQ (aio_pika) для событийной шины
 - Docker, docker-compose
 - OAuth2 / JWT
 
