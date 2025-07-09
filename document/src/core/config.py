@@ -13,8 +13,9 @@ ROLE_MANAGER = 'Manager'
 
 BASE_DIR = Path(__file__).parent.parent.parent
 
+ENVIRONMENT = os.getenv("ENV", "dev")
+load_dotenv(f".env.{ENVIRONMENT}")
 
-load_dotenv()
 
 
 class AuthJWT(BaseModel):
@@ -23,9 +24,13 @@ class AuthJWT(BaseModel):
 
 
 class Settings(BaseSettings):
-    echo: bool = True
+    echo: bool = os.environ.get('ECHO')
     db_url: str = os.environ.get('DB_URL')
+    es_url: str = os.environ.get('ES_URL')
     rabbit_mq_url: str = os.environ.get('RMQ_URL')
     auth_jwt: AuthJWT = AuthJWT()
 
-settings = Settings()
+    class Config:
+        env_file = f".env.{ENVIRONMENT}"
+
+settings: Settings = Settings()

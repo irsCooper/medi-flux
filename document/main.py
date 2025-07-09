@@ -1,22 +1,27 @@
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
-
-from fastapi.middleware.cors import CORSMiddleware
-
-from src.history.router import router as router_history
-from src.rabbit_mq.server import consume_rabbitmq
-
 import uvicorn
 import asyncio
+
+from src.utils import create_index_if_not_exists, wait_for_elasticsearch
+from src.history.router import router as router_history
+from src.rabbit_mq.server import consume_rabbitmq
+from src.core.db_helper import es
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     task = asyncio.create_task(consume_rabbitmq())
-    try: 
+
+    await wait_for_elasticsearch()  
+    await create_index_if_not_exists()
+
+    try:
         yield
     finally:
         task.cancel()
+        await es.close()
 
 
 

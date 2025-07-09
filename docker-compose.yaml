@@ -12,12 +12,40 @@ services:
       RABBITMQ_DEFAULT_USER: "guest"
       RABBITMQ_DEFAULT_PASS: "guest"
     volumes:
-      - rabbitmq-data:/var/lib/rabbitmq
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - work
+
+  elastic:
+    image: elasticsearch:8.15.2
+    container_name: elastic
+    volumes:
+      - elastic_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    networks:
+      - work
+
+  kibana:
+    image: kibana:8.15.2
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elastic:9200
+    volumes:
+      - ./setup_kibana.sh:/usr/share/kibana/setup_kibana.sh
+    entrypoint: ["/bin/bash", "-c", "/usr/local/bin/kibana-docker & /usr/share/kibana/setup_kibana.sh; wait"]
+    depends_on:
+      - elastic
     networks:
       - work
 
   postgres:
-    image: postgres:latest
+    image: postgres:15-alpine
     container_name: postgres
     environment:
       POSTGRES_USER: postgres       
@@ -26,70 +54,70 @@ services:
     ports:
       - "5432:5432"                 
     volumes:
-      - postgres_data_test4:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - work
 
-  account_service:
-    build:
-      context: ./account/
-    container_name: account_service
-    ports:
-      - "8081:8081"
-    depends_on:
-      - postgres
-      - rabbitmq
-      # - redis
-    env_file:
-      - ./account/.env
-    networks:
-      - work
+  # account_service:
+  #   build:
+  #     context: ./account/
+  #   container_name: account_service
+  #   ports:
+  #     - "8081:8081"
+  #   depends_on:
+  #     - postgres
+  #     - rabbitmq
+  #     # - redis
+  #   env_file:
+  #     - ./account/.env
+  #   networks:
+  #     - work
 
-  hospital_service:
-    build:
-      context: ./hospital/
-    container_name: hospital_service
-    ports:
-      - "8082:8082"
-    depends_on:
-      - postgres
-      - rabbitmq
-      # - redis
-    env_file:
-      - ./hospital/.env
-    networks:
-      - work
+  # hospital_service:
+  #   build:
+  #     context: ./hospital/
+  #   container_name: hospital_service
+  #   ports:
+  #     - "8082:8082"
+  #   depends_on:
+  #     - postgres
+  #     - rabbitmq
+  #     # - redis
+  #   env_file:
+  #     - ./hospital/.env
+  #   networks:
+  #     - work
 
-  timetable_service:
-    build:
-      context: ./timetable/
-    container_name: timetable_service
-    ports:
-      - "8083:8083"
-    depends_on:
-      - postgres
-      - rabbitmq
-      # - redis
-    env_file:
-      - ./timetable/.env
-    networks:
-      - work
+  # timetable_service:
+  #   build:
+  #     context: ./timetable/
+  #   container_name: timetable_service
+  #   ports:
+  #     - "8083:8083"
+  #   depends_on:
+  #     - postgres
+  #     - rabbitmq
+  #     # - redis
+  #   env_file:
+  #     - ./timetable/.env
+  #   networks:
+  #     - work
 
-  document_service:
-    build:
-      context: ./document/
-    container_name: document_service
-    ports:
-      - "8084:8084"
-    depends_on:
-      - postgres
-      - rabbitmq
-      # - redis
-    env_file:
-      - ./document/.env
-    networks:
-      - work
+  # document_service:
+  #   build:
+  #     context: ./document/
+  #   container_name: document_service
+  #   ports:
+  #     - "8084:8084"
+  #   depends_on:
+  #     - postgres
+  #     - rabbitmq
+  #     # - redis
+  #   env_file:
+  #     - ./document/.env
+  #   networks:
+  #     - work
 
 
 networks:
@@ -97,5 +125,6 @@ networks:
     driver: bridge
 
 volumes:
-  postgres_data_test4:
-  rabbitmq-data:
+  postgres_data:
+  rabbitmq_data:
+  elastic_data:

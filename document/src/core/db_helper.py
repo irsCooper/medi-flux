@@ -1,5 +1,7 @@
 from asyncio import current_task
 from typing import AsyncGenerator
+
+from elasticsearch import AsyncElasticsearch
 from .config import settings
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, async_scoped_session, AsyncSession
 
@@ -35,7 +37,11 @@ class DatabaseHelper:
             await session.close()
 
 
-db = DatabaseHelper(
+db: DatabaseHelper = DatabaseHelper(
     url=settings.db_url,
     echo=settings.echo
+)
+
+es: AsyncElasticsearch = AsyncElasticsearch(
+    hosts=["http://localhost:9200"]
 )
